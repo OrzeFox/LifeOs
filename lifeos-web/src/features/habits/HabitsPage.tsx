@@ -9,13 +9,14 @@ import styles from './HabitsPage.module.css';
 
 function ProgressInput({ habit, onSave }: { habit: Habit; onSave: () => void }) {
   const today = new Date().toISOString().split('T')[0];
+  const type = habit.habitType ?? 'simple';
 
   const saveProgress = useCallback(async (value: number, checklistState?: boolean[]) => {
     await habitsApi.setProgress(habit.id, today, value, checklistState);
     onSave();
   }, [habit.id, today, onSave]);
 
-  if (habit.habitType === 'simple') {
+  if (type === 'simple') {
     return (
       <button
         onClick={() => saveProgress(habit.completed ? 0 : 1)}
@@ -31,8 +32,8 @@ function ProgressInput({ habit, onSave }: { habit: Habit; onSave: () => void }) 
     );
   }
 
-  if (habit.habitType === 'timer' || habit.habitType === 'numeric') {
-    const unit = habit.habitType === 'timer' ? 'min' : '';
+  if (type === 'timer' || type === 'numeric') {
+    const unit = type === 'timer' ? 'min' : '';
     return (
       <div className={styles.numericInput}>
         <input
@@ -61,7 +62,7 @@ function ProgressInput({ habit, onSave }: { habit: Habit; onSave: () => void }) 
     );
   }
 
-  if (habit.habitType === 'checklist') {
+  if (type === 'checklist') {
     const items = habit.checklistItems ?? [];
     const state = habit.checklistState ?? items.map(() => false);
     return (
@@ -100,7 +101,8 @@ function HabitCalendar({ habit }: { habit: Habit }) {
 
   useEffect(() => {
     habitsApi.getCalendar(habit.id, year, month)
-      .then((r) => setDays(r.data));
+      .then((r) => setDays(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setDays([]));
   }, [habit.id, year, month]);
 
   const prevMonth = () => { if (month === 1) { setMonth(12); setYear(y => y - 1); } else setMonth(m => m - 1); };
@@ -165,7 +167,9 @@ function HabitHistory({ habit }: { habit: Habit }) {
   const [history, setHistory] = useState<HistoryDay[]>([]);
 
   useEffect(() => {
-    habitsApi.getHistory(habit.id, 14).then((r) => setHistory(r.data));
+    habitsApi.getHistory(habit.id, 14)
+      .then((r) => setHistory(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setHistory([]));
   }, [habit.id]);
 
   return (
@@ -426,7 +430,8 @@ export function HabitsPage() {
             <div className={styles.habitList}>
               {habits.map((h) => {
                 const isSelected = selectedId === h.id;
-                const typeInfo = HABIT_TYPES.find((t) => t.value === h.habitType);
+                const effectiveType = h.habitType ?? 'simple';
+                const typeInfo = HABIT_TYPES.find((t) => t.value === effectiveType);
                 return (
                   <div
                     key={h.id}
@@ -439,7 +444,7 @@ export function HabitsPage() {
                       <div className={styles.habitInfo} onClick={() => setSelectedId(isSelected ? null : h.id)} style={{ cursor: 'pointer' }}>
                         <div className={styles.habitNameRow}>
                           <p className={`${styles.habitName} ${h.completed ? styles.habitNameDone : ''}`}>{h.name}</p>
-                          {h.habitType !== 'simple' && (
+                          {effectiveType !== 'simple' && (
                             <span className={styles.habitTypeTag}>
                               <Icon name={typeInfo?.icon ?? 'check'} size={10} /> {typeInfo?.label}
                             </span>

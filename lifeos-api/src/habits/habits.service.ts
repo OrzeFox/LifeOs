@@ -119,18 +119,19 @@ export class HabitsService {
       const log = logMap.get(h.id);
       const value = log?.value ?? 0;
       const checklistState = log?.checklistState ?? null;
+      const habitType = h.habitType ?? HabitType.SIMPLE;
       return {
         id: h.id,
         name: h.name,
         description: h.description,
-        habitType: h.habitType,
+        habitType,
         targetValue: h.targetValue,
         scheduleDays: h.scheduleDays,
         color: h.color ?? '#4EDEA3',
         checklistItems: h.checklistItems ?? [],
         completed: log?.completed ?? false,
         value,
-        progress: computeProgress(h, value, checklistState ?? undefined),
+        progress: computeProgress({ ...h, habitType: habitType as HabitType }, value, checklistState ?? undefined),
         checklistState,
       };
     });
