@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EnergyLog } from './energy-log.entity';
+import { EnergyLog } from './entities/energy-log.entity';
 import { EnergyController } from './energy.controller';
 import { EnergyService } from './energy.service';
 

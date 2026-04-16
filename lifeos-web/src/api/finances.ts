@@ -19,4 +19,8 @@ export const financesApi = {
 
   getSummary: (year?: number, month?: number) =>
     api.get('/finances/summary', { params: { year, month } }),
+
+  getCategories: () => api.get('/finances/categories'),
+
+  createCategory: (name: string) => api.post('/finances/categories', { name }),
 };

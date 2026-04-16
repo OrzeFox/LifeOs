@@ -1,30 +1,17 @@
 import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Logger } from '@nestjs/common';
-import { IsString, IsNumber, IsEnum, IsOptional, IsDateString } from 'class-validator';
-import { Type } from 'class-transformer';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { FinancesService } from './finances.service';
-import { ExpenseType } from './expense.entity';
-
-class CreateExpenseDto {
-  @IsString() name: string;
-  @IsNumber() @Type(() => Number) amount: number;
-  @IsEnum(ExpenseType) type: ExpenseType;
-  @IsOptional() @IsString() category?: string;
-  @IsDateString() date: string;
-}
-
-class SetIncomeDto {
-  @IsNumber() @Type(() => Number) amount: number;
-  @IsString() month: string;
-}
+import { CreateExpenseDto } from './dto/create-expense.dto';
+import { SetIncomeDto } from './dto/set-income.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('finances')
 export class FinancesController {
   private readonly logger = new Logger(FinancesController.name);
 
-  constructor(private readonly financesService: FinancesService) {}
+  constructor(private readonly financesService: FinancesService) { }
 
   @Post('expenses')
   createExpense(@CurrentUser() user, @Body() dto: CreateExpenseDto) {
@@ -68,5 +55,16 @@ export class FinancesController {
     const m = parseInt(month) || now.getMonth() + 1;
     this.logger.log(`GET /finances/summary — user: ${user.id} | ${y}-${m}`);
     return this.financesService.getMonthlySummary(user.id, y, m);
+  }
+
+  @Get('categories')
+  getCategories(@CurrentUser() user) {
+    return this.financesService.getCategories(user.id);
+  }
+
+  @Post('categories')
+  createCategory(@CurrentUser() user, @Body() dto: CreateCategoryDto) {
+    this.logger.log(`POST /finances/categories — user: ${user.id} | "${dto.name}"`);
+    return this.financesService.createCategory(user.id, dto.name);
   }
 }

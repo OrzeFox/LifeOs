@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x:*)",
+      "Bash(pg_lsclusters)",
+      "Bash(systemctl status *)",
+      "Bash(service postgresql *)",
+      "Bash(psql --version)",
+      "Read(//etc/**)",
+      "Bash(docker info *)"
+    ]
+  }
+}

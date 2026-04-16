@@ -1,0 +1,60 @@
+.nav {
+  background: var(--color-surface-container);
+  border-bottom: 1px solid var(--color-surface-container-high);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+}
+
+.links {
+  display: flex;
+  gap: 4px;
+}
+
+.link {
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--color-on-surface-variant);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.link:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.linkActive {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+.linkActive:hover {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+.logoutBtn {
+  font-size: var(--text-body-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-sans);
+  transition: color 0.15s ease;
+}
+
+.logoutBtn:hover {
+  color: var(--color-on-surface);
+}

@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import styles from './Navbar.module.css';
 
 const links = [
   { to: '/', label: 'Dashboard' },
@@ -13,27 +14,20 @@ export function Navbar() {
   const { logout } = useAuthStore();
 
   return (
-    <nav className="bg-slate-800 border-b border-slate-700 px-4 py-3 flex items-center justify-between">
-      <span className="font-bold text-lg text-violet-400">LifeOS</span>
-      <div className="flex gap-1">
+    <nav className={styles.nav}>
+      <span className={styles.logo}>LifeOS</span>
+      <div className={styles.links}>
         {links.map(({ to, label }) => (
           <Link
             key={to}
             to={to}
-            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-              pathname === to
-                ? 'bg-violet-600 text-white'
-                : 'text-slate-300 hover:bg-slate-700'
-            }`}
+            className={pathname === to ? `${styles.link} ${styles.linkActive}` : styles.link}
           >
             {label}
           </Link>
         ))}
       </div>
-      <button
-        onClick={logout}
-        className="text-sm text-slate-400 hover:text-white transition-colors"
-      >
+      <button onClick={logout} className={styles.logoutBtn}>
         Salir
       </button>
     </nav>

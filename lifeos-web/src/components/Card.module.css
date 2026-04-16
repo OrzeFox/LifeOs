@@ -1,0 +1,14 @@
+.card {
+  background: var(--color-surface-container);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+}
+
+.title {
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-on-surface-variant);
+  margin: 0 0 var(--space-4);
+}

@@ -2,11 +2,11 @@ import {
   Entity, PrimaryGeneratedColumn, Column,
   CreateDateColumn, OneToMany,
 } from 'typeorm';
-import { Expense } from '../finances/expense.entity';
-import { MonthlyIncome } from '../finances/monthly-income.entity';
-import { Habit } from '../habits/habit.entity';
-import { Meal } from '../routine/meal.entity';
-import { EnergyLog } from '../energy/energy-log.entity';
+import { Expense } from '../../finances/entities/expense.entity';
+import { MonthlyIncome } from '../../finances/entities/monthly-income.entity';
+import { Habit } from '../../habits/entities/habit.entity';
+import { Meal } from '../../routine/entities/meal.entity';
+import { EnergyLog } from '../../energy/entities/energy-log.entity';
 
 @Entity('users')
 export class User {

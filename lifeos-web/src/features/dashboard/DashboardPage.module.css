@@ -1,0 +1,356 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hero {
+  margin-bottom: 8px;
+}
+
+.heroTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-lg);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--color-on-surface);
+  line-height: 1.05;
+}
+
+.heroDate {
+  margin: 6px 0 0;
+  font-size: var(--text-label-md);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  font-weight: 600;
+}
+
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background: var(--color-surface-container);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.labelSm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 10px;
+}
+
+.progressTrack {
+  height: 4px;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.subMetricsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.metricLabel {
+  margin: 0 0 4px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.metricValue {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-headline-sm);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.energyNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-display-lg);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.energyMeta {
+  padding-bottom: 8px;
+}
+
+.energyStatusText {
+  margin: 0;
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+}
+
+.energySavingText {
+  margin: 0;
+  font-size: var(--text-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.energyTicks {
+  display: flex;
+  justify-content: space-between;
+}
+
+.energyTick {
+  font-size: var(--text-label-sm);
+  transition: color 0.2s ease;
+}
+
+.habitLoopHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.habitPct {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-md);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--color-secondary);
+}
+
+.segmentBar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.segment {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-full);
+  transition: background 0.3s ease;
+}
+
+.habitList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.habitRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.habitToggle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.habitName {
+  flex: 1;
+  font-size: 0.8125rem;
+  transition: all 0.2s ease;
+}
+
+.habitNameCompleted {
+  color: var(--color-on-surface-variant);
+  text-decoration: line-through;
+}
+
+.mealHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.mealList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mealRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-lg);
+  transition: background 0.15s ease;
+}
+
+.mealRow:hover {
+  background: var(--color-surface-bright);
+}
+
+.mealTime {
+  font-family: monospace;
+  font-size: var(--text-body-sm);
+  color: var(--color-outline);
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.mealName {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.mealDesc {
+  margin: 1px 0 0;
+  font-size: var(--text-label-md);
+  color: var(--color-on-surface-variant);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.progressLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.progressLabelText {
+  font-size: var(--text-label-sm);
+  color: var(--color-outline);
+}
+
+.predictionBanner {
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-xl);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.predictionValue {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-lg);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+
+.spinnerWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.emptyText {
+  font-size: 0.75rem;
+  color: var(--color-outline);
+  margin: 0;
+}
+
+.moreHabits {
+  font-size: var(--text-label-md);
+  color: var(--color-outline);
+  padding-top: 6px;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .heroTitle { font-size: var(--text-headline-lg, 1.75rem); }
+
+  .bentoGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* override any col-span inline styles */
+  .bentoGrid > * { grid-column: 1 / -1 !important; }
+
+  .subMetricsGrid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  .predictionBanner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subMetricsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeletonLine {
+  height: 16px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-container-high) 25%,
+    var(--color-surface-container-highest, rgba(255,255,255,0.07)) 50%,
+    var(--color-surface-container-high) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.skeletonSubGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}

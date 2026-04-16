@@ -1,0 +1,584 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hero { margin-bottom: 8px; }
+
+.heroTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-lg);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--color-on-surface);
+  line-height: 1.05;
+}
+
+.heroSub {
+  margin: 6px 0 0;
+  font-size: var(--text-label-md);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  font-weight: 600;
+}
+
+.card {
+  background: var(--color-surface-container);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.labelSm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 10px;
+}
+
+/* ── Overview bar ── */
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.progressPct {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-lg);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--color-secondary);
+}
+
+.progressPctUnit { font-size: 1rem; color: var(--color-on-surface-variant); }
+
+.segmentBar { display: flex; gap: 4px; }
+
+.segment {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-full);
+  transition: background 0.3s ease;
+}
+
+.progressCount {
+  margin: 8px 0 0;
+  font-size: var(--text-label-md);
+  color: var(--color-outline);
+}
+
+/* ── Main layout ── */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── Habit rows ── */
+.habitList { display: flex; flex-direction: column; gap: 6px; }
+
+.habitRow {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  border-left: 3px solid transparent;
+  overflow: hidden;
+  transition: background 0.15s;
+}
+
+.habitRowSelected {
+  background: var(--color-surface-container-high);
+}
+
+.habitRowMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+/* ── Toggle button (simple) ── */
+.toggleBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+/* ── Numeric/timer input ── */
+.numericInput {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.progressNumberInput {
+  width: 52px;
+  background: var(--color-surface-container-high);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  font-size: var(--text-body-sm);
+  color: var(--color-on-surface);
+  outline: none;
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+.progressNumberInput:focus { border-color: rgba(192,193,255,0.35); }
+
+.progressUnit {
+  font-size: 0.7rem;
+  color: var(--color-outline);
+  white-space: nowrap;
+}
+
+/* ── Checklist items ── */
+.checklistItems { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; min-width: 140px; }
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: var(--text-body-sm);
+}
+
+.checklistLabel { color: var(--color-on-surface); transition: all 0.15s; }
+
+.checklistLabelDone {
+  color: var(--color-on-surface-variant);
+  text-decoration: line-through;
+}
+
+/* ── Habit info ── */
+.habitInfo { flex: 1; min-width: 0; }
+
+.habitNameRow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.habitName {
+  margin: 0;
+  font-size: var(--text-body-md);
+  font-weight: 500;
+  color: var(--color-on-surface);
+  transition: all 0.2s;
+}
+
+.habitNameDone {
+  font-weight: 400;
+  color: var(--color-on-surface-variant);
+  text-decoration: line-through;
+}
+
+.habitDesc { margin: 2px 0 0; font-size: var(--text-body-sm); color: var(--color-on-surface-variant); }
+
+.habitTypeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(192,193,255,0.10);
+  color: var(--color-secondary);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.habitScheduleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.05);
+  color: var(--color-outline);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ── Per-habit progress bar ── */
+.habitProgressWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.habitProgressTrack {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--color-surface-container-high);
+  overflow: hidden;
+}
+
+.habitProgressFill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.habitProgressPct {
+  font-size: 0.625rem;
+  color: var(--color-outline);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Habit detail (expanded) ── */
+.habitDetail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── Calendar ── */
+.calendar { display: flex; flex-direction: column; gap: 10px; }
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calNavBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  transition: color 0.15s;
+}
+
+.calNavBtn:hover { color: var(--color-on-surface); }
+
+.calMonthLabel {
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  color: var(--color-on-surface);
+  text-transform: capitalize;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calDayName {
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-outline);
+  padding-bottom: 4px;
+}
+
+.calCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 2px;
+  border-radius: var(--radius-sm);
+}
+
+.calCellToday { background: rgba(255,255,255,0.04); }
+
+.calCellUnscheduled { opacity: 0.25; }
+
+.calDayNum {
+  font-size: 0.625rem;
+  color: var(--color-on-surface-variant);
+}
+
+.calDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+/* ── History bars ── */
+.history { display: flex; flex-direction: column; }
+
+.historyBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 60px;
+}
+
+.historyBar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+}
+
+.historyBarTrack {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-surface-container-high);
+}
+
+.historyBarFill {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  transition: height 0.4s ease;
+  min-height: 2px;
+}
+
+.historyBarLabel {
+  font-size: 0.5625rem;
+  color: var(--color-outline);
+  text-transform: capitalize;
+}
+
+/* ── Delete button ── */
+.deleteBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--color-outline);
+  display: flex;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.deleteBtn:hover { color: var(--color-error); }
+
+/* ── Empty state ── */
+.emptyState { display: flex; flex-direction: column; align-items: center; padding: 48px 0; gap: 12px; }
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-surface-container-high);
+}
+
+.emptyText { margin: 0; font-size: 0.8125rem; color: var(--color-outline); text-align: center; }
+
+/* ── Create form ── */
+.form { display: flex; flex-direction: column; gap: 12px; }
+
+.formGroup { display: flex; flex-direction: column; }
+
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 6px;
+}
+
+.formLabelOptional { opacity: 0.4; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.input {
+  width: 100%;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid rgba(60, 74, 66, 0.15);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: var(--text-body-md);
+  color: var(--color-on-surface);
+  outline: none;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.input:focus { border-color: rgba(192,193,255,0.35); }
+
+/* ── Habit type selector ── */
+.typeGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+.typeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.typeBtnActive {
+  border-color: rgba(192,193,255,0.4);
+  background: rgba(192,193,255,0.10);
+  color: var(--color-secondary);
+}
+
+/* ── Day picker ── */
+.dayPicker { display: flex; gap: 4px; }
+
+.dayBtn {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dayBtnActive {
+  border-color: rgba(192,193,255,0.4);
+  background: rgba(192,193,255,0.12);
+  color: var(--color-secondary);
+}
+
+/* ── Color picker ── */
+.colorPicker { display: flex; gap: 6px; }
+
+.colorDot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.colorDotActive { border-color: white; transform: scale(1.2); }
+
+/* ── Checklist input rows ── */
+.checklistInputRow { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+
+.removeItemBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-outline);
+  display: flex;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.removeItemBtn:hover { color: var(--color-error); }
+
+.addItemBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.10);
+  border-radius: var(--radius-md);
+  padding: 7px 12px;
+  color: var(--color-outline);
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.addItemBtn:hover { border-color: rgba(192,193,255,0.3); color: var(--color-secondary); }
+
+/* ── Submit ── */
+.submitBtn {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  transition: opacity 0.15s;
+  box-shadow: 0 0 24px rgba(192,193,255,0.10);
+}
+
+.submitBtn:hover { opacity: 0.8; }
+.submitBtn:disabled { opacity: 0.5; cursor: wait; }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .heroTitle { font-size: var(--text-headline-lg, 1.75rem); }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .habitDetail {
+    grid-template-columns: 1fr;
+  }
+
+  .progressHeader {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .habitProgressWrap { width: 60px; }
+
+  .checklistItems { min-width: 0; }
+
+  .typeGrid { grid-template-columns: 1fr 1fr; }
+
+  .calGrid { gap: 1px; }
+  .calCell { padding: 3px 1px; }
+
+  .historyBars { gap: 2px; }
+}
+
+@media (max-width: 480px) {
+  .habitRowMain { padding: 10px; gap: 8px; }
+  .segmentBar { gap: 2px; }
+}

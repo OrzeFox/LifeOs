@@ -1,177 +1,259 @@
 import { useEffect, useState } from 'react';
 import api from '../../api/client';
 import { Icon } from '../../components/Icon';
+import type { Meal, MealForm, DailySummary } from '../../ts/routine';
+import { MEAL_TYPES, TIME_SLOTS } from '../../ts/routine';
+import styles from './RoutinePage.module.css';
 
-// ─── Primitives ───────────────────────────────────────────────────────────────
-
-const card: React.CSSProperties = {
-  background: 'var(--color-surface-container)',
-  borderRadius: 'var(--radius-xl)',
-  padding: '24px',
-};
-
-const labelSm: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
-  fontSize: '0.625rem',
-  fontWeight: 600,
-  letterSpacing: '0.05em',
-  textTransform: 'uppercase',
-  color: 'var(--color-on-surface-variant)',
-  marginBottom: '10px',
-};
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: 'var(--color-surface-container-lowest)',
-  border: '1px solid rgba(60, 74, 66, 0.15)',
-  borderRadius: 'var(--radius-md)',
-  padding: '10px 14px',
-  fontSize: '0.875rem',
-  color: 'var(--color-on-surface)',
-  outline: 'none',
-  fontFamily: 'var(--font-sans)',
-  transition: 'border-color 0.15s ease',
-};
-
-// ─── Slot colors (tonal, not border-based) ────────────────────────────────────
+const NUTRITION_GOALS = { calories: 2000, protein: 150, carbs: 250, fat: 65, fiber: 30 };
 
 function slotColor(time?: string): string {
   if (!time) return 'var(--color-outline)';
   const h = parseInt(time.split(':')[0], 10);
-  if (h < 10) return 'var(--color-tertiary)';      /* Amber — morning  */
-  if (h < 14) return 'var(--color-primary)';        /* Emerald — midday */
-  if (h < 18) return 'var(--color-secondary)';      /* Indigo — afternoon */
-  return 'var(--color-on-surface-variant)';          /* Neutral — evening */
+  if (h < 10) return 'var(--color-tertiary)';
+  if (h < 14) return 'var(--color-primary)';
+  if (h < 18) return 'var(--color-secondary)';
+  return 'var(--color-on-surface-variant)';
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+function NutritionPill({ label, value, unit }: { label: string; value?: number; unit?: string }) {
+  if (!value) return null;
+  return (
+    <span className={styles.nutritionPill}>
+      {label} <strong>{value}{unit ?? 'g'}</strong>
+    </span>
+  );
+}
+
+function EditMealRow({ meal, onSave, onCancel }: {
+  meal: Meal;
+  onSave: (data: Partial<Meal>) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [mealType, setMealType] = useState(meal.mealType);
+  const [scheduledTime, setScheduledTime] = useState(meal.scheduledTime ?? '');
+  const [description, setDescription] = useState(meal.description ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    await onSave({ mealType, scheduledTime, description });
+    setSaving(false);
+  };
+
+  return (
+    <form onSubmit={submit} className={styles.editForm}>
+      <select value={mealType} onChange={(e) => setMealType(e.target.value as any)} className={styles.input}>
+        {MEAL_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+      </select>
+      <select value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className={styles.input}>
+        <option value="">Sin hora</option>
+        {TIME_SLOTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+      </select>
+      <input
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Descripción de la comida…"
+        className={styles.input}
+      />
+      <div className={styles.editActions}>
+        <button type="submit" disabled={saving} className={styles.saveEditBtn}>
+          {saving ? <span className={styles.savingDot} /> : <Icon name="check" size={14} />}
+          {saving ? 'Analizando…' : 'Guardar'}
+        </button>
+        <button type="button" onClick={onCancel} className={styles.cancelEditBtn}>Cancelar</button>
+      </div>
+    </form>
+  );
+}
 
 export function RoutinePage() {
-  const [meals, setMeals] = useState<any[]>([]);
   const today = new Date().toISOString().split('T')[0];
-  const [form, setForm] = useState({ name: '', scheduledTime: '', description: '', date: today });
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [summary, setSummary] = useState<DailySummary | null>(null);
+  const [historyDates, setHistoryDates] = useState<string[]>([]);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState<MealForm>({
+    mealType: 'almuerzo', scheduledTime: '12:30', description: '', date: today,
+  });
 
-  const load = () => api.get('/routine/meals', { params: { date: form.date } }).then(r => setMeals(r.data));
-  useEffect(() => { load(); }, [form.date]);
+  const load = async (date = selectedDate) => {
+    setLoadingSummary(true);
+    const res = await api.get('/routine/meals/summary', { params: { date } });
+    setSummary(res.data);
+    setLoadingSummary(false);
+  };
+
+  const loadHistory = async () => {
+    const res = await api.get('/routine/meals/history');
+    setHistoryDates(res.data);
+  };
+
+  useEffect(() => { load(selectedDate); }, [selectedDate]);
+  useEffect(() => { loadHistory(); }, []);
+
+  const selectDate = (d: string) => {
+    setSelectedDate(d);
+    setForm((f) => ({ ...f, date: d }));
+    setEditingId(null);
+  };
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAdding(true);
     await api.post('/routine/meals', form);
-    setForm(f => ({ ...f, name: '', scheduledTime: '', description: '' }));
-    load();
+    setForm((f) => ({ ...f, description: '' }));
+    await Promise.all([load(selectedDate), loadHistory()]);
+    setAdding(false);
   };
 
-  const remove = (id: string) => api.delete(`/routine/meals/${id}`).then(load);
+  const update = async (id: string, data: Partial<Meal>) => {
+    await api.patch(`/routine/meals/${id}`, data);
+    setEditingId(null);
+    load(selectedDate);
+  };
 
+  const remove = async (id: string) => {
+    await api.delete(`/routine/meals/${id}`);
+    load(selectedDate);
+    loadHistory();
+  };
+
+  const meals = summary?.meals ?? [];
+  const totals = summary?.totals;
   const sorted = [...meals].sort((a, b) => {
     if (!a.scheduledTime) return 1;
     if (!b.scheduledTime) return -1;
     return a.scheduledTime.localeCompare(b.scheduledTime);
   });
 
-  const displayDate = new Date(form.date + 'T00:00:00')
+  const displayDate = new Date(selectedDate + 'T00:00:00')
     .toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  const isToday = selectedDate === today;
 
-      {/* ── Editorial heading ──────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '8px' }}>
+  return (
+    <div className={styles.page}>
+
+      <div className={styles.heroRow}>
         <div>
-          <h1 style={{
-            margin: 0,
-            fontFamily: 'var(--font-display)',
-            fontSize: '3.5rem', fontWeight: 300, letterSpacing: '-0.04em',
-            color: 'var(--color-on-surface)', lineHeight: 1.05,
-            textTransform: 'capitalize',
-          }}>
-            {displayDate}
-          </h1>
-          <p style={{
-            margin: '6px 0 0',
-            fontSize: '0.6875rem', letterSpacing: '0.05em',
-            textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', fontWeight: 600,
-          }}>
-            Plan alimenticio · {meals.length} {meals.length === 1 ? 'comida' : 'comidas'}
+          <h1 className={styles.heroTitle}>Alimentación</h1>
+          <p className={styles.heroSub}>
+            {displayDate} · {meals.length} {meals.length === 1 ? 'comida' : 'comidas'}
+            {isToday && <span className={styles.todayBadge}>Hoy</span>}
           </p>
         </div>
-        {/* Date picker — sunken input style */}
         <input
-          type="date" value={form.date}
-          onChange={e => setForm({ ...form, date: e.target.value })}
-          style={{ ...inputStyle, width: 'auto', colorScheme: 'dark', marginBottom: '10px' }}
-          onFocus={(e) => (e.target.style.borderColor = 'rgba(78, 222, 163, 0.35)')}
-          onBlur={(e) => (e.target.style.borderColor = 'rgba(60, 74, 66, 0.15)')}
+          type="date"
+          value={selectedDate}
+          onChange={(e) => selectDate(e.target.value)}
+          className={styles.datePicker}
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '16px', alignItems: 'start' }}>
+      {/* Daily nutrition totals */}
+      {totals && totals.calories > 0 && (
+        <div className={styles.nutritionCard}>
+          <div className={styles.labelSm}><Icon name="monitor_heart" size={11} /> Resumen nutricional del día</div>
+          <div className={styles.nutritionGrid}>
+            {([
+              { key: 'calories', label: 'Calorías', unit: 'kcal', goal: NUTRITION_GOALS.calories, color: 'var(--color-tertiary)' },
+              { key: 'protein',  label: 'Proteína',  unit: 'g',    goal: NUTRITION_GOALS.protein,  color: 'var(--color-primary)' },
+              { key: 'carbs',    label: 'Carbohid.',  unit: 'g',    goal: NUTRITION_GOALS.carbs,    color: 'var(--color-secondary)' },
+              { key: 'fat',      label: 'Grasa',      unit: 'g',    goal: NUTRITION_GOALS.fat,      color: 'var(--color-on-surface-variant)' },
+              { key: 'fiber',    label: 'Fibra',      unit: 'g',    goal: NUTRITION_GOALS.fiber,    color: 'var(--color-outline)' },
+            ] as { key: keyof typeof totals; label: string; unit: string; goal: number; color: string }[]).map(({ key, label, unit, goal, color }) => {
+              const val = totals[key];
+              const pct = Math.min((val / goal) * 100, 100);
+              return (
+                <div key={key} className={styles.nutritionStat}>
+                  <div className={styles.nutritionStatHeader}>
+                    <span className={styles.nutritionLabel}>{label}</span>
+                    <span className={styles.nutritionValue} style={{ color }}>
+                      {val}<span className={styles.nutritionUnit}>{unit}</span>
+                    </span>
+                  </div>
+                  <div className={styles.nutritionTrack}>
+                    <div className={styles.nutritionFill} style={{ width: `${pct}%`, background: color }} />
+                  </div>
+                  <span className={styles.nutritionGoal}>meta {goal}{unit}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-        {/* ── Meal Timeline ──────────────────────────────────────── */}
-        <div style={card}>
-          <div style={labelSm}><Icon name="schedule" size={11} /> Línea de tiempo</div>
+      <div className={styles.grid}>
 
-          {sorted.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 0', gap: '12px' }}>
-              <span className="icon-container" style={{ width: '48px', height: '48px' }}>
-                <Icon name="no_meals" size={24} style={{ color: 'var(--color-outline)' }} />
-              </span>
-              <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-outline)', textAlign: 'center' }}>
-                Sin comidas para esta fecha.
-              </p>
+        {/* Timeline */}
+        <div className={styles.card}>
+          <div className={styles.labelSm}><Icon name="schedule" size={11} /> Línea de tiempo</div>
+
+          {loadingSummary ? (
+            <div className={styles.skeletonList}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className={styles.skeletonRow}>
+                  <div className={styles.skeletonDot} />
+                  <div style={{ flex: 1 }}>
+                    <div className={styles.skeletonLine} style={{ width: '30%', marginBottom: 6 }} />
+                    <div className={styles.skeletonLine} style={{ width: '60%' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : sorted.length === 0 ? (
+            <div className={styles.emptyState}>
+              <span className={styles.emptyIcon}><Icon name="no_meals" size={24} /></span>
+              <p className={styles.emptyText}>Sin comidas para esta fecha.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div className={styles.mealList}>
               {sorted.map((m) => {
                 const color = slotColor(m.scheduledTime);
+                const typeLabel = MEAL_TYPES.find((t) => t.value === m.mealType)?.label ?? m.mealType;
+                const isEditing = editingId === m.id;
+
                 return (
-                  <div key={m.id}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '14px',
-                      padding: '12px 14px',
-                      /* Tonal elevation on hover, never a border */
-                      background: 'var(--color-surface-container-high)',
-                      borderRadius: 'var(--radius-lg)',
-                      transition: 'background 0.15s ease',
-                    }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.background = 'var(--color-surface-bright)')}
-                    onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.background = 'var(--color-surface-container-high)')}
-                  >
-                    {/* Time dot — color-coded by slot */}
-                    <div style={{
-                      width: '8px', height: '8px', borderRadius: '9999px',
-                      background: color, flexShrink: 0,
-                      boxShadow: `0 0 8px color-mix(in srgb, ${color} 40%, transparent)`,
-                    }} />
-
-                    <span style={{
-                      fontFamily: 'monospace', fontSize: '0.75rem', fontWeight: 600,
-                      color, width: '40px', flexShrink: 0,
-                    }}>
-                      {m.scheduledTime?.slice(0, 5) ?? '--:--'}
-                    </span>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-on-surface)' }}>{m.name}</p>
-                      {m.description && (
-                        <p style={{ margin: '2px 0 0', fontSize: '0.6875rem', color: 'var(--color-on-surface-variant)' }}>{m.description}</p>
-                      )}
-                    </div>
-
-                    <button onClick={() => remove(m.id)}
-                      style={{
-                        background: 'transparent', border: 'none', cursor: 'pointer',
-                        padding: '4px', borderRadius: 'var(--radius-sm)',
-                        color: 'var(--color-outline)', display: 'flex', flexShrink: 0,
-                        transition: 'color 0.15s',
-                      }}
-                      onMouseEnter={(ev) => ((ev.currentTarget).style.color = 'var(--color-error)')}
-                      onMouseLeave={(ev) => ((ev.currentTarget).style.color = 'var(--color-outline)')}
-                    >
-                      <Icon name="close" size={16} />
-                    </button>
+                  <div key={m.id} className={`${styles.mealRow} ${isEditing ? styles.mealRowEditing : ''}`}>
+                    {isEditing ? (
+                      <EditMealRow
+                        meal={m}
+                        onSave={(data) => update(m.id, data)}
+                        onCancel={() => setEditingId(null)}
+                      />
+                    ) : (
+                      <>
+                        <div className={styles.timeDot} style={{ background: color, boxShadow: `0 0 8px color-mix(in srgb, ${color} 40%, transparent)` }} />
+                        <span className={styles.timeLabel} style={{ color }}>
+                          {m.scheduledTime?.slice(0, 5) ?? '--:--'}
+                        </span>
+                        <div className={styles.mealInfo}>
+                          <p className={styles.mealName}>{typeLabel}</p>
+                          {m.description && <p className={styles.mealDesc}>{m.description}</p>}
+                          {(m.calories || m.protein || m.carbs || m.fat) && (
+                            <div className={styles.nutritionPills}>
+                              <NutritionPill label="kcal" value={m.calories} unit="kcal" />
+                              <NutritionPill label="P" value={m.protein} />
+                              <NutritionPill label="C" value={m.carbs} />
+                              <NutritionPill label="G" value={m.fat} />
+                              {m.fiber ? <NutritionPill label="F" value={m.fiber} /> : null}
+                            </div>
+                          )}
+                        </div>
+                        <div className={styles.mealActions}>
+                          <button onClick={() => setEditingId(m.id)} className={styles.editRowBtn}>
+                            <Icon name="edit" size={14} />
+                          </button>
+                          <button onClick={() => remove(m.id)} className={styles.deleteBtn}>
+                            <Icon name="close" size={14} />
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 );
               })}
@@ -179,78 +261,85 @@ export function RoutinePage() {
           )}
         </div>
 
-        {/* ── Add Meal ────────────────────────────────────────────── */}
-        <div style={card}>
-          <div style={labelSm}><Icon name="add_circle" size={11} /> Agregar comida</div>
+        {/* Right column */}
+        <div className={styles.rightCol}>
 
-          <form onSubmit={add} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div>
-              <label style={{ ...labelSm, marginBottom: '6px', marginTop: '2px' }}>Nombre</label>
-              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="Ej: Almuerzo" required
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.borderColor = 'rgba(78, 222, 163, 0.35)')}
-                onBlur={(e) => (e.target.style.borderColor = 'rgba(60, 74, 66, 0.15)')}
-              />
-            </div>
-            <div>
-              <label style={{ ...labelSm, marginBottom: '6px' }}>Hora</label>
-              <input type="time" value={form.scheduledTime}
-                onChange={e => setForm({ ...form, scheduledTime: e.target.value })}
-                style={{ ...inputStyle, colorScheme: 'dark' }}
-                onFocus={(e) => (e.target.style.borderColor = 'rgba(78, 222, 163, 0.35)')}
-                onBlur={(e) => (e.target.style.borderColor = 'rgba(60, 74, 66, 0.15)')}
-              />
-            </div>
-            <div>
-              <label style={{ ...labelSm, marginBottom: '6px' }}>
-                Descripción
-                <span style={{ opacity: 0.4, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span>
-              </label>
-              <input value={form.description}
-                onChange={e => setForm({ ...form, description: e.target.value })}
-                placeholder="Ej: Ensalada de pollo…"
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.borderColor = 'rgba(78, 222, 163, 0.35)')}
-                onBlur={(e) => (e.target.style.borderColor = 'rgba(60, 74, 66, 0.15)')}
-              />
-            </div>
-            <button type="submit" style={{
-              padding: '12px', borderRadius: 'var(--radius-md)', border: 'none',
-              background: 'var(--color-primary-container)',
-              color: 'var(--color-on-primary)',
-              fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
-              fontFamily: 'var(--font-display)', letterSpacing: '0.02em',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              marginTop: '4px', transition: 'opacity 0.15s',
-            }}
-              onMouseEnter={(e) => ((e.currentTarget).style.opacity = '0.8')}
-              onMouseLeave={(e) => ((e.currentTarget).style.opacity = '1')}
-            >
-              <Icon name="add" size={16} />
-              Agregar comida
-            </button>
-          </form>
-
-          {/* Slot color legend — tonal, no borders */}
-          <div style={{
-            marginTop: '20px', padding: '14px',
-            background: 'var(--color-surface-container-low)',
-            borderRadius: 'var(--radius-lg)',
-          }}>
-            <div style={{ ...labelSm, marginBottom: '10px' }}>Franja horaria</div>
-            {[
-              { lbl: 'Mañana · antes 10h',  color: 'var(--color-tertiary)' },
-              { lbl: 'Mediodía · 10–14h',   color: 'var(--color-primary)' },
-              { lbl: 'Tarde · 14–18h',      color: 'var(--color-secondary)' },
-              { lbl: 'Noche · después 18h', color: 'var(--color-on-surface-variant)' },
-            ].map(({ lbl, color }) => (
-              <div key={lbl} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 0' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '9999px', background: color, flexShrink: 0 }} />
-                <span style={{ fontSize: '0.6875rem', color: 'var(--color-on-surface-variant)' }}>{lbl}</span>
+          {/* Add form */}
+          <div className={styles.card}>
+            <div className={styles.labelSm}><Icon name="add_circle" size={11} /> Agregar comida</div>
+            <form onSubmit={add} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Tipo</label>
+                <select
+                  value={form.mealType}
+                  onChange={(e) => setForm({ ...form, mealType: e.target.value as any })}
+                  className={styles.input}
+                >
+                  {MEAL_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
               </div>
-            ))}
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Franja horaria</label>
+                <select
+                  value={form.scheduledTime}
+                  onChange={(e) => setForm({ ...form, scheduledTime: e.target.value })}
+                  className={styles.input}
+                >
+                  <option value="">Sin hora</option>
+                  {TIME_SLOTS.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Descripción
+                  <span className={styles.formLabelOptional}> · Claude analiza la nutrición</span>
+                </label>
+                <input
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="Ej: 200g pechuga a la plancha con arroz integral…"
+                  className={styles.input}
+                />
+              </div>
+
+              <button type="submit" disabled={adding} className={styles.submitBtn}>
+                {adding
+                  ? <><span className={styles.savingDot} /> Analizando nutrición…</>
+                  : <><Icon name="add" size={16} /> Agregar comida</>
+                }
+              </button>
+            </form>
           </div>
+
+          {/* History */}
+          {historyDates.length > 0 && (
+            <div className={styles.card}>
+              <div className={styles.labelSm}><Icon name="history" size={11} /> Historial</div>
+              <div className={styles.historyList}>
+                {historyDates.map((d) => {
+                  const label = new Date(d + 'T00:00:00')
+                    .toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
+                  const isSelected = d === selectedDate;
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => selectDate(d)}
+                      className={`${styles.historyItem} ${isSelected ? styles.historyItemActive : ''}`}
+                    >
+                      <span className={styles.historyLabel}>{label}</span>
+                      {d === today && <span className={styles.todayChip}>hoy</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

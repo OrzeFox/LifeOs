@@ -1,0 +1,589 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.heroRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.heroTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-lg);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--color-on-surface);
+  line-height: 1.05;
+  text-transform: capitalize;
+}
+
+.heroSub {
+  margin: 6px 0 0;
+  font-size: var(--text-label-md);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  font-weight: 600;
+}
+
+.datePicker {
+  background: var(--color-surface-container-lowest);
+  border: 1px solid rgba(60, 74, 66, 0.15);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: var(--text-body-md);
+  color: var(--color-on-surface);
+  outline: none;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s ease;
+  color-scheme: dark;
+  margin-bottom: 10px;
+}
+
+.datePicker:focus {
+  border-color: rgba(78, 222, 163, 0.35);
+}
+
+.card {
+  background: var(--color-surface-container);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.labelSm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mealList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mealRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-lg);
+  transition: background 0.15s ease;
+}
+
+.mealRow:hover {
+  background: var(--color-surface-bright);
+}
+
+.timeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.timeLabel {
+  font-family: monospace;
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.mealInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.mealName {
+  margin: 0;
+  font-size: var(--text-body-md);
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.mealDesc {
+  margin: 2px 0 0;
+  font-size: var(--text-label-md);
+  color: var(--color-on-surface-variant);
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--color-outline);
+  display: flex;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.deleteBtn:hover {
+  color: var(--color-error);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 0;
+  gap: 12px;
+}
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-surface-container-high);
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-outline);
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 6px;
+}
+
+.formLabelOptional {
+  opacity: 0.4;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.input {
+  width: 100%;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid rgba(60, 74, 66, 0.15);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: var(--text-body-md);
+  color: var(--color-on-surface);
+  outline: none;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s ease;
+  color-scheme: dark;
+}
+
+.input:focus {
+  border-color: rgba(78, 222, 163, 0.35);
+}
+
+.submitBtn {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  transition: opacity 0.15s ease;
+}
+
+.submitBtn:hover {
+  opacity: 0.8;
+}
+
+.legend {
+  margin-top: 20px;
+  padding: 14px;
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-lg);
+}
+
+.legendTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 10px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.legendDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  font-size: var(--text-label-md);
+  color: var(--color-on-surface-variant);
+}
+
+/* ── Today badge ── */
+.todayBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  margin-left: 8px;
+  border-radius: 99px;
+  background: rgba(78, 222, 163, 0.12);
+  color: var(--color-primary);
+  font-size: var(--text-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Meal actions ── */
+.mealActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.editRowBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--color-outline);
+  display: flex;
+  transition: color 0.15s;
+}
+
+.editRowBtn:hover {
+  color: var(--color-primary);
+}
+
+.mealRowEditing {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 16px;
+}
+
+/* ── Edit form inline ── */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.saveEditBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary);
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: opacity 0.15s;
+}
+
+.saveEditBtn:disabled { opacity: 0.6; cursor: wait; }
+
+.cancelEditBtn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-outline-variant);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cancelEditBtn:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* ── Saving spinner dot ── */
+.savingDot {
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Nutrition pills (per meal) ── */
+.nutritionPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.nutritionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--color-surface-container-high);
+  font-size: 0.6875rem;
+  color: var(--color-on-surface-variant);
+}
+
+.nutritionPill strong {
+  color: var(--color-on-surface);
+  font-weight: 600;
+}
+
+/* ── Daily nutrition card ── */
+.nutritionCard {
+  background: var(--color-surface-container);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.nutritionGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.nutritionStat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nutritionStatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.nutritionLabel {
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.nutritionValue {
+  font-size: var(--text-body-md);
+  font-weight: 700;
+}
+
+.nutritionUnit {
+  font-size: 0.65rem;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-left: 1px;
+}
+
+.nutritionTrack {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--color-surface-container-high);
+  overflow: hidden;
+}
+
+.nutritionFill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.nutritionGoal {
+  font-size: 0.625rem;
+  color: var(--color-outline);
+  letter-spacing: 0.03em;
+}
+
+/* ── History ── */
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.historyItem:hover {
+  background: var(--color-surface-container-high);
+}
+
+.historyItemActive {
+  background: rgba(78, 222, 163, 0.08);
+  border-color: rgba(78, 222, 163, 0.25);
+}
+
+.historyLabel {
+  font-size: var(--text-body-sm);
+  color: var(--color-on-surface);
+  text-transform: capitalize;
+}
+
+.todayChip {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(78, 222, 163, 0.12);
+}
+
+/* ── Skeleton ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeletonLine {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--color-surface-container-high) 25%, rgba(255,255,255,0.06) 50%, var(--color-surface-container-high) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.skeletonList { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-lg);
+}
+
+.skeletonDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-surface-container-highest, rgba(255,255,255,0.08));
+  flex-shrink: 0;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .heroTitle { font-size: var(--text-headline-lg, 1.75rem); }
+
+  .heroRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .datePicker { margin-bottom: 4px; }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nutritionGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .historyList { max-height: 200px; }
+}
+
+@media (max-width: 480px) {
+  .nutritionGrid { grid-template-columns: repeat(2, 1fr); }
+}

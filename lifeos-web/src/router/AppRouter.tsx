@@ -6,36 +6,18 @@ import { HabitsPage } from '../features/habits/HabitsPage';
 import { RoutinePage } from '../features/routine/RoutinePage';
 import { LoginPage } from '../features/auth/LoginPage';
 import { Sidebar } from '../components/Sidebar';
+import styles from './AppRouter.module.css';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-/**
- * AppShell — The Monolithic Archive layout.
- *
- * Sidebar: floating glass column, 24px from left edge, 24px top/bottom.
- * Content: margin-left = 24 (sidebar left gap) + 220 (sidebar width) + 24 (gap to content) = 268px
- *          padding: 40px 40px 40px 0  (breathing room around content)
- * Global background: #0E0E0E — the obsidian canvas.
- */
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-background)',
-      display: 'flex',
-    }}>
+    <div className={styles.shell}>
       <Sidebar />
-      <main style={{
-        flex: 1,
-        marginLeft: '268px',   /* 24 + 220 + 24 */
-        padding: '40px 40px 40px 0',
-        minHeight: '100vh',
-      }}>
-        {children}
-      </main>
+      <main className={styles.main}>{children}</main>
     </div>
   );
 }

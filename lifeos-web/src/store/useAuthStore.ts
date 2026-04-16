@@ -1,11 +1,5 @@
 import { create } from 'zustand';
-
-interface AuthState {
-  token: string | null;
-  isAuthenticated: boolean;
-  login: (token: string) => void;
-  logout: () => void;
-}
+import type { AuthState } from '../ts/auth';
 
 export const useAuthStore = create<AuthState>((set) => ({
   token: localStorage.getItem('token'),

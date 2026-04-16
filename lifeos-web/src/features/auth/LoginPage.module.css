@@ -1,0 +1,106 @@
+.container {
+  min-height: 100vh;
+  background: var(--color-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 384px;
+  background: var(--color-surface-container);
+  border-radius: var(--radius-3xl);
+  padding: 32px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  color: var(--color-on-surface-variant);
+  font-size: var(--text-body-sm);
+  margin: 0 0 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input {
+  width: 100%;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid rgba(60, 74, 66, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  font-size: var(--text-body-sm);
+  color: var(--color-on-surface);
+  outline: none;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  border-color: rgba(78, 222, 163, 0.40);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--text-label-sm);
+  margin: 0;
+}
+
+.submitBtn {
+  width: 100%;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: opacity 0.15s ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggleBtn {
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+  font-size: var(--text-label-md);
+  margin-top: 16px;
+  font-family: var(--font-sans);
+  transition: color 0.15s ease;
+}
+
+.toggleBtn:hover {
+  color: var(--color-on-surface);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 24px 20px;
+    border-radius: var(--radius-2xl);
+  }
+}

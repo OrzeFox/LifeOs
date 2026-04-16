@@ -2,7 +2,7 @@ import {
   Entity, PrimaryGeneratedColumn, Column,
   ManyToOne, JoinColumn, Unique,
 } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('energy_logs')
 @Unique(['user', 'date'])

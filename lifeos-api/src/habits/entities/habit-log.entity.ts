@@ -5,7 +5,7 @@ import {
 import { Habit } from './habit.entity';
 
 @Entity('habit_logs')
-@Unique(['habit', 'date']) // un registro por hábito por día
+@Unique(['habit', 'date'])
 export class HabitLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -19,4 +19,12 @@ export class HabitLog {
 
   @Column({ default: false })
   completed: boolean;
+
+  // Achieved value: minutes for timer, count for numeric, % for checklist/simple
+  @Column({ type: 'float', default: 0 })
+  value: number;
+
+  // Checklist per-item completion state
+  @Column({ type: 'simple-json', nullable: true, name: 'checklist_state' })
+  checklistState: boolean[];
 }

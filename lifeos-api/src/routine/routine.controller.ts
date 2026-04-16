@@ -1,15 +1,9 @@
-import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Logger } from '@nestjs/common';
-import { IsString, IsOptional } from 'class-validator';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Logger } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RoutineService } from './routine.service';
-
-class CreateMealDto {
-  @IsString() name: string;
-  @IsOptional() @IsString() scheduledTime?: string;
-  @IsOptional() @IsString() description?: string;
-  @IsString() date: string;
-}
+import { CreateMealDto } from './dto/create-meal.dto';
+import { UpdateMealDto } from './dto/update-meal.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('routine')
@@ -20,8 +14,8 @@ export class RoutineController {
 
   @Post('meals')
   create(@CurrentUser() user, @Body() dto: CreateMealDto) {
-    this.logger.log(`POST /routine/meals — user: ${user.id} | "${dto.name}" ${dto.scheduledTime ?? '--'} date: ${dto.date}`);
-    return this.routineService.createMeal(user.id, dto);
+    this.logger.log(`POST /routine/meals — user: ${user.id} | [${dto.mealType}] date: ${dto.date}`);
+    return this.routineService.createMeal(user.id, dto as any);
   }
 
   @Get('meals')
@@ -29,6 +23,23 @@ export class RoutineController {
     const d = date || new Date().toISOString().split('T')[0];
     this.logger.log(`GET /routine/meals — user: ${user.id} | date: ${d}`);
     return this.routineService.getMealsForDate(user.id, d);
+  }
+
+  @Get('meals/summary')
+  getSummary(@CurrentUser() user, @Query('date') date: string) {
+    const d = date || new Date().toISOString().split('T')[0];
+    return this.routineService.getDailySummary(user.id, d);
+  }
+
+  @Get('meals/history')
+  getHistory(@CurrentUser() user) {
+    return this.routineService.getDatesWithMeals(user.id);
+  }
+
+  @Patch('meals/:id')
+  update(@CurrentUser() user, @Param('id') id: string, @Body() dto: UpdateMealDto) {
+    this.logger.log(`PATCH /routine/meals/${id} — user: ${user.id}`);
+    return this.routineService.updateMeal(id, user.id, dto as any);
   }
 
   @Delete('meals/:id')

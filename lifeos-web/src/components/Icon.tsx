@@ -1,15 +1,10 @@
-interface IconProps {
-  name: string;
-  size?: number;
-  filled?: boolean;
-  className?: string;
-}
+import type { IconProps } from '../ts/common';
 
-export function Icon({ name, size = 20, filled = false, className = '' }: IconProps) {
+export function Icon({ name, size = 20, filled = false, className = '', style }: IconProps) {
   return (
     <span
       className={`material-symbols-outlined${filled ? ' filled' : ''}${className ? ` ${className}` : ''}`}
-      style={{ fontSize: size }}
+      style={{ fontSize: size, ...style }}
     >
       {name}
     </span>

@@ -1,15 +1,8 @@
 import { Controller, Get, Post, Body, Query, UseGuards, Logger } from '@nestjs/common';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { Type } from 'class-transformer';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { EnergyService } from './energy.service';
-
-class UpsertEnergyDto {
-  @IsString() date: string;
-  @IsInt() @Min(1) @Max(10) @Type(() => Number) level: number;
-  @IsOptional() @IsString() notes?: string;
-}
+import { UpsertEnergyDto } from './dto/upsert-energy.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('energy')

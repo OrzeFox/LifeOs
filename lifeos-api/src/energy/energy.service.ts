@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EnergyLog } from './energy-log.entity';
+import { EnergyLog } from './entities/energy-log.entity';
 
 @Injectable()
 export class EnergyService {

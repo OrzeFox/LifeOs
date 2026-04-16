@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Habit } from './habit.entity';
-import { HabitLog } from './habit-log.entity';
+import { Habit } from './entities/habit.entity';
+import { HabitLog } from './entities/habit-log.entity';
 import { HabitsController } from './habits.controller';
 import { HabitsService } from './habits.service';
 
