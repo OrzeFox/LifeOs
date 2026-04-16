@@ -1,0 +1,42 @@
+import {
+  Entity, PrimaryGeneratedColumn, Column,
+  CreateDateColumn, OneToMany,
+} from 'typeorm';
+import { Expense } from '../finances/expense.entity';
+import { MonthlyIncome } from '../finances/monthly-income.entity';
+import { Habit } from '../habits/habit.entity';
+import { Meal } from '../routine/meal.entity';
+import { EnergyLog } from '../energy/energy-log.entity';
+
+@Entity('users')
+export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  email: string;
+
+  @Column({ name: 'password_hash' })
+  passwordHash: string;
+
+  @Column()
+  name: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @OneToMany(() => Expense, (expense) => expense.user)
+  expenses: Expense[];
+
+  @OneToMany(() => MonthlyIncome, (income) => income.user)
+  incomes: MonthlyIncome[];
+
+  @OneToMany(() => Habit, (habit) => habit.user)
+  habits: Habit[];
+
+  @OneToMany(() => Meal, (meal) => meal.user)
+  meals: Meal[];
+
+  @OneToMany(() => EnergyLog, (log) => log.user)
+  energyLogs: EnergyLog[];
+}
