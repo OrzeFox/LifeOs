@@ -22,7 +22,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: true, // solo dev — en prod usar migraciones
+        ssl: { rejectUnauthorized: false },
+        extra: { family: 4 },
+        // synchronize: true, // solo dev — en prod usar migraciones
       }),
     }),
     AuthModule,
@@ -34,4 +36,4 @@ import { DashboardModule } from './dashboard/dashboard.module';
     DashboardModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
