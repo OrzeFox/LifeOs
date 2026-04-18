@@ -108,17 +108,114 @@
   padding: 12px 14px;
 }
 
-/* ── Toggle button (simple) ── */
-.toggleBtn {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
+/* ── Habit controls wrapper ── */
+.habitControls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
   flex-shrink: 0;
-  cursor: pointer;
+}
+
+/* ── State selector ── */
+.stateSelector {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.stateBtn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  font-size: 0.6875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+}
+
+.stateBtn:hover { filter: brightness(1.25); }
+
+.stateBtnActive {
+  box-shadow: 0 0 12px rgba(255,255,255,0.06);
+}
+
+/* ── Type detail ── */
+.typeDetailChecklist {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.typeDetailCheckItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  user-select: none;
+}
+
+.typeDetailNumeric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.typeDetailInput {
+  width: 60px;
+  background: var(--color-surface-container-high);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: var(--text-body-sm);
+  color: var(--color-on-surface);
+  outline: none;
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+.typeDetailInput:focus { border-color: rgba(192,193,255,0.35); }
+
+.typeDetailUnit {
+  font-size: var(--text-label-md);
+  color: var(--color-outline);
+  white-space: nowrap;
+}
+
+/* ── State summary row (overview) ── */
+.stateSummaryRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 0;
+  flex-wrap: wrap;
+}
+
+.stateSummaryItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-label-md);
+}
+
+.stateSummaryItem strong {
+  font-size: var(--text-body-md);
+  font-weight: 700;
+}
+
+.stateSummaryDivider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }
 
 /* ── Numeric/timer input ── */
@@ -553,32 +650,23 @@
 @media (max-width: 768px) {
   .heroTitle { font-size: var(--text-headline-lg, 1.75rem); }
 
-  .mainGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .habitDetail {
-    grid-template-columns: 1fr;
-  }
-
-  .progressHeader {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .habitProgressWrap { width: 60px; }
-
-  .checklistItems { min-width: 0; }
-
+  .mainGrid { grid-template-columns: 1fr; }
+  .habitDetail { grid-template-columns: 1fr; }
   .typeGrid { grid-template-columns: 1fr 1fr; }
-
   .calGrid { gap: 1px; }
   .calCell { padding: 3px 1px; }
-
   .historyBars { gap: 2px; }
+
+  .stateSelector { gap: 3px; }
+  .stateBtn { padding: 4px 7px; font-size: 0.625rem; }
+
+  .stateSummaryRow { gap: 8px; }
 }
 
 @media (max-width: 480px) {
-  .habitRowMain { padding: 10px; gap: 8px; }
+  .habitRowMain { padding: 10px; gap: 8px; flex-wrap: wrap; }
+  .habitControls { align-items: stretch; width: 100%; }
+  .stateSelector { width: 100%; }
+  .stateBtn { flex: 1; justify-content: center; }
   .segmentBar { gap: 2px; }
 }

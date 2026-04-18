@@ -7,7 +7,7 @@ import { HabitLog } from './entities/habit-log.entity';
 function computeProgress(habit: Habit, value: number, checklistState?: boolean[]): number {
   switch (habit.habitType) {
     case HabitType.SIMPLE:
-      return value >= 1 ? 100 : 0;
+      return value >= 1 ? 100 : value > 0 ? 50 : 0;
     case HabitType.TIMER:
     case HabitType.NUMERIC:
       return habit.targetValue > 0

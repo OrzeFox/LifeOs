@@ -5,47 +5,151 @@ import type { Habit, CalendarDay, HistoryDay } from '../../ts/habits';
 import { HABIT_TYPES, WEEKDAYS, HABIT_COLORS } from '../../ts/habits';
 import styles from './HabitsPage.module.css';
 
-// ─── Progress input per habit type ───────────────────────────────────────────
+// ─── Habit state helpers ─────────────────────────────────────────────────────
 
-function ProgressInput({ habit, onSave }: { habit: Habit; onSave: () => void }) {
-  const today = new Date().toISOString().split('T')[0];
+type HabitStateValue = 'pendiente' | 'en_progreso' | 'terminado';
+
+const HABIT_STATES: { value: HabitStateValue; label: string; icon: string;
+  activeColor: string; activeBg: string; activeBorder: string; inactiveColor: string }[] = [
+  { value: 'pendiente',   label: 'Pendiente',   icon: 'circle',
+    activeColor: '#94a3b8', activeBg: 'rgba(148,163,184,0.14)', activeBorder: 'rgba(148,163,184,0.5)', inactiveColor: 'rgba(148,163,184,0.55)' },
+  { value: 'en_progreso', label: 'En progreso', icon: 'pending',
+    activeColor: '#FFB95F', activeBg: 'rgba(255,185,95,0.14)',  activeBorder: 'rgba(255,185,95,0.55)',  inactiveColor: 'rgba(255,185,95,0.5)' },
+  { value: 'terminado',   label: 'Terminado',   icon: 'check_circle',
+    activeColor: '#4EDEA3', activeBg: 'rgba(78,222,163,0.14)', activeBorder: 'rgba(78,222,163,0.55)', inactiveColor: 'rgba(78,222,163,0.45)' },
+];
+
+function getHabitState(habit: Habit): HabitStateValue {
   const type = habit.habitType ?? 'simple';
-
-  const saveProgress = useCallback(async (value: number, checklistState?: boolean[]) => {
-    await habitsApi.setProgress(habit.id, today, value, checklistState);
-    onSave();
-  }, [habit.id, today, onSave]);
-
+  // Use raw value for simple type so it works without backend progress recompute
   if (type === 'simple') {
+    if (habit.value >= 1)  return 'terminado';
+    if (habit.value > 0)   return 'en_progreso';
+    return 'pendiente';
+  }
+  if (habit.completed) return 'terminado';
+  if (habit.progress > 0 || habit.value > 0) return 'en_progreso';
+  return 'pendiente';
+}
+
+// ─── State selector ───────────────────────────────────────────────────────────
+
+function StateSelector({ habit, onSave }: { habit: Habit; onSave: () => void }) {
+  const today   = new Date().toISOString().split('T')[0];
+  const type    = habit.habitType ?? 'simple';
+  const current = getHabitState(habit);
+
+  const applyState = async (s: HabitStateValue) => {
+    if (s === current) return;
+    let value = 0;
+    let checklistState: boolean[] | undefined;
+
+    if (s === 'pendiente') {
+      value = 0;
+      if (type === 'checklist')
+        checklistState = (habit.checklistItems ?? []).map(() => false);
+    } else if (s === 'en_progreso') {
+      if (type === 'timer' || type === 'numeric')
+        value = habit.value > 0 ? habit.value : Math.max(1, Math.round((habit.targetValue ?? 2) * 0.5));
+      else if (type === 'checklist') {
+        const items = habit.checklistItems ?? [];
+        const half  = Math.max(1, Math.floor(items.length / 2));
+        checklistState = items.map((_, i) => i < half);
+        value = half;
+      } else {
+        value = 0.5;
+      }
+    } else {
+      if (type === 'checklist') {
+        const items = habit.checklistItems ?? [];
+        value = items.length;
+        checklistState = items.map(() => true);
+      } else {
+        value = habit.targetValue ?? 1;
+      }
+    }
+
+    try {
+      await habitsApi.setProgress(habit.id, today, value, checklistState);
+      onSave();
+    } catch { /* silent */ }
+  };
+
+  return (
+    <div className={styles.stateSelector}>
+      {HABIT_STATES.map((s) => {
+        const active = current === s.value;
+        return (
+          <button
+            key={s.value}
+            onClick={(e) => { e.stopPropagation(); applyState(s.value); }}
+            className={`${styles.stateBtn} ${active ? styles.stateBtnActive : ''}`}
+            style={{
+              color:       active ? s.activeColor   : s.inactiveColor,
+              borderColor: active ? s.activeBorder  : 'rgba(255,255,255,0.08)',
+              background:  active ? s.activeBg      : 'transparent',
+              fontWeight:  active ? 700              : 500,
+            }}
+          >
+            <Icon name={s.icon} size={12} style={{ color: active ? s.activeColor : s.inactiveColor }} />
+            <span>{s.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Type-specific detail (checklist tasks / numeric value) ──────────────────
+
+function TypeDetail({ habit, onSave }: { habit: Habit; onSave: () => void }) {
+  const today = new Date().toISOString().split('T')[0];
+  const type  = habit.habitType ?? 'simple';
+
+  const saveProgress = async (value: number, checklistState?: boolean[]) => {
+    try {
+      await habitsApi.setProgress(habit.id, today, value, checklistState);
+      onSave();
+    } catch { /* silent */ }
+  };
+
+  if (type === 'checklist') {
+    const items = habit.checklistItems ?? [];
+    const state = habit.checklistState ?? items.map(() => false);
     return (
-      <button
-        onClick={() => saveProgress(habit.completed ? 0 : 1)}
-        className={styles.toggleBtn}
-        style={{
-          border: `2px solid ${habit.completed ? habit.color : 'var(--color-surface-bright)'}`,
-          background: habit.completed ? habit.color : 'transparent',
-          boxShadow: habit.completed ? `0 0 10px ${habit.color}44` : 'none',
-        }}
-      >
-        {habit.completed && <Icon name="check" size={11} />}
-      </button>
+      <div className={styles.typeDetailChecklist}>
+        {items.map((item, i) => (
+          <label key={i} className={styles.typeDetailCheckItem} onClick={(e) => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={state[i] ?? false}
+              onChange={(e) => {
+                const next = [...state];
+                next[i] = e.target.checked;
+                saveProgress(next.filter(Boolean).length, next);
+              }}
+            />
+            <span className={state[i] ? styles.checklistLabelDone : ''}>{item}</span>
+          </label>
+        ))}
+      </div>
     );
   }
 
   if (type === 'timer' || type === 'numeric') {
-    const unit = type === 'timer' ? 'min' : '';
+    const unit = type === 'timer' ? 'min' : 'veces';
     return (
-      <div className={styles.numericInput}>
+      <div className={styles.typeDetailNumeric} onClick={(e) => e.stopPropagation()}>
+        <Icon name={type === 'timer' ? 'timer' : 'pin'} size={13} style={{ color: 'var(--color-outline)' }} />
         <input
           type="number"
           min={0}
-          max={habit.targetValue ? habit.targetValue * 2 : 9999}
           defaultValue={habit.value || ''}
           placeholder="0"
-          className={styles.progressNumberInput}
+          className={styles.typeDetailInput}
           onBlur={(e) => {
             const v = parseFloat(e.target.value) || 0;
-            if (v !== habit.value) saveProgress(v);
+            saveProgress(v);
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -55,35 +159,9 @@ function ProgressInput({ habit, onSave }: { habit: Habit; onSave: () => void }) 
             }
           }}
         />
-        <span className={styles.progressUnit}>
-          {unit}{habit.targetValue ? ` / ${habit.targetValue}${unit}` : ''}
+        <span className={styles.typeDetailUnit}>
+          {habit.targetValue ? `/ ${habit.targetValue} ${unit}` : unit}
         </span>
-      </div>
-    );
-  }
-
-  if (type === 'checklist') {
-    const items = habit.checklistItems ?? [];
-    const state = habit.checklistState ?? items.map(() => false);
-    return (
-      <div className={styles.checklistItems}>
-        {items.map((item, i) => (
-          <label key={i} className={styles.checklistItem}>
-            <input
-              type="checkbox"
-              checked={state[i] ?? false}
-              onChange={(e) => {
-                const next = [...state];
-                next[i] = e.target.checked;
-                const value = next.filter(Boolean).length;
-                saveProgress(value, next);
-              }}
-            />
-            <span className={`${styles.checklistLabel} ${state[i] ? styles.checklistLabelDone : ''}`}>
-              {item}
-            </span>
-          </label>
-        ))}
       </div>
     );
   }
@@ -368,10 +446,10 @@ export function HabitsPage() {
     load();
   };
 
-  const completed = habits.filter((h) => h.completed).length;
-  const total     = habits.length;
-  const pct       = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const selected  = habits.find((h) => h.id === selectedId) ?? null;
+  const total       = habits.length;
+  const pendientes  = habits.filter((h) => getHabitState(h) === 'pendiente').length;
+  const enProgreso  = habits.filter((h) => getHabitState(h) === 'en_progreso').length;
+  const terminados  = habits.filter((h) => getHabitState(h) === 'terminado').length;
 
   const todayLabel = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -386,32 +464,42 @@ export function HabitsPage() {
 
       {/* Daily overview bar */}
       {total > 0 && (
-        <div className={styles.card} style={{ boxShadow: pct > 50 ? '0 0 48px rgba(192,193,255,0.04)' : 'none' }}>
-          <div className={styles.progressHeader}>
-            <div className={styles.labelSm}><Icon name="self_improvement" size={11} /> Progreso de hoy</div>
-            <span className={styles.progressPct} style={{ textShadow: pct > 50 ? '0 0 24px rgba(192,193,255,0.25)' : 'none' }}>
-              {pct}<span className={styles.progressPctUnit}>%</span>
+        <div className={styles.card}>
+          <div className={styles.labelSm}><Icon name="self_improvement" size={11} /> Progreso de hoy</div>
+          <div className={styles.stateSummaryRow}>
+            <span className={styles.stateSummaryItem} style={{ color: 'var(--color-outline)' }}>
+              <Icon name="radio_button_unchecked" size={13} />
+              <strong>{pendientes}</strong> pendiente{pendientes !== 1 ? 's' : ''}
+            </span>
+            <span className={styles.stateSummaryDivider} />
+            <span className={styles.stateSummaryItem} style={{ color: 'var(--color-tertiary)' }}>
+              <Icon name="pending" size={13} />
+              <strong>{enProgreso}</strong> en progreso
+            </span>
+            <span className={styles.stateSummaryDivider} />
+            <span className={styles.stateSummaryItem} style={{ color: 'var(--color-primary)' }}>
+              <Icon name="check_circle" size={13} />
+              <strong>{terminados}</strong> terminado{terminados !== 1 ? 's' : ''}
             </span>
           </div>
-          <div className={styles.segmentBar}>
-            {habits.map((h) => (
-              <div
-                key={h.id}
-                title={`${h.name}: ${h.progress}%`}
-                className={styles.segment}
-                style={{
-                  background: h.completed
-                    ? h.color
-                    : h.progress > 0
-                    ? `${h.color}55`
-                    : 'var(--color-surface-container-high)',
-                  boxShadow: h.completed ? `0 0 8px ${h.color}44` : 'none',
-                  cursor: 'default',
-                }}
-              />
-            ))}
+          <div className={styles.segmentBar} style={{ marginTop: 12 }}>
+            {habits.map((h) => {
+              const st = getHabitState(h);
+              return (
+                <div
+                  key={h.id}
+                  title={`${h.name}: ${st}`}
+                  className={styles.segment}
+                  style={{
+                    background: st === 'terminado' ? h.color
+                      : st === 'en_progreso' ? 'var(--color-tertiary)'
+                      : 'var(--color-surface-container-high)',
+                    boxShadow: st === 'terminado' ? `0 0 8px ${h.color}44` : 'none',
+                  }}
+                />
+              );
+            })}
           </div>
-          <p className={styles.progressCount}>{completed} de {total} hábitos completados</p>
         </div>
       )}
 
@@ -439,14 +527,12 @@ export function HabitsPage() {
                     style={{ borderLeft: `3px solid ${h.color}` }}
                   >
                     <div className={styles.habitRowMain}>
-                      <ProgressInput habit={h} onSave={load} />
-
                       <div className={styles.habitInfo} onClick={() => setSelectedId(isSelected ? null : h.id)} style={{ cursor: 'pointer' }}>
                         <div className={styles.habitNameRow}>
                           <p className={`${styles.habitName} ${h.completed ? styles.habitNameDone : ''}`}>{h.name}</p>
-                          {effectiveType !== 'simple' && (
+                          {effectiveType !== 'simple' && typeInfo && (
                             <span className={styles.habitTypeTag}>
-                              <Icon name={typeInfo?.icon ?? 'check'} size={10} /> {typeInfo?.label}
+                              <Icon name={typeInfo.icon} size={10} /> {typeInfo.label}
                             </span>
                           )}
                           {h.scheduleDays?.length ? (
@@ -458,15 +544,9 @@ export function HabitsPage() {
                         {h.description && <p className={styles.habitDesc}>{h.description}</p>}
                       </div>
 
-                      {/* Progress bar */}
-                      <div className={styles.habitProgressWrap}>
-                        <div className={styles.habitProgressTrack}>
-                          <div
-                            className={styles.habitProgressFill}
-                            style={{ width: `${h.progress}%`, background: h.color }}
-                          />
-                        </div>
-                        <span className={styles.habitProgressPct}>{h.progress}%</span>
+                      <div className={styles.habitControls}>
+                        <StateSelector habit={h} onSave={load} />
+                        {effectiveType !== 'simple' && <TypeDetail habit={h} onSave={load} />}
                       </div>
 
                       <button
