@@ -1,96 +1,63 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { financesApi } from '../../api/finances';
 import { Icon } from '../../components/Icon';
-import type { Expense, FinanceSummary, ExpenseForm, ExpenseCategory } from '../../ts/finances';
+import type { ExpenseForm } from '../../ts/finances';
+import { DEFAULT_CATEGORIES, computeSpentPct } from '../../domain/finances/financeUtils';
+import useFinances from './hooks/useFinances';
+import useCategories from './hooks/useCategories';
 import styles from './FinancesPage.module.css';
 
-const DEFAULT_CATEGORIES = ['Comida', 'Salidas', 'Transporte', 'Salud', 'Ropa', 'Entretenimiento'];
+export const FinancesPage = () => {
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const month = now.getMonth() + 1;
 
-export function FinancesPage() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [summary, setSummary] = useState<FinanceSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [customCategories, setCustomCategories] = useState<ExpenseCategory[]>([]);
+  const { expenses, summary, loading, addExpense, deleteExpense, saveIncome } = useFinances(year, month);
+  const { customCategories, saveCategory } = useCategories();
 
-  // Income edit state
-  const [incomeEditing, setIncomeEditing] = useState(false);
-  const [incomeInput, setIncomeInput] = useState('');
-
-  // New-category inline input
-  const [addingCategory, setAddingCategory] = useState(false);
+  const [incomeEditing, setIncomeEditing]     = useState(false);
+  const [incomeInput, setIncomeInput]         = useState('');
+  const [addingCategory, setAddingCategory]   = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ExpenseForm>({
     defaultValues: {
       name: '', amount: '', type: 'variable', category: '',
-      date: new Date().toISOString().split('T')[0],
+      date: now.toISOString().split('T')[0],
     },
   });
-
-  const now   = new Date();
-  const year  = now.getFullYear();
-  const month = now.getMonth() + 1;
 
   const allCategories = [
     ...DEFAULT_CATEGORIES,
     ...customCategories.map((c) => c.name).filter((n) => !DEFAULT_CATEGORIES.includes(n)),
   ];
 
-  const load = async () => {
-    setLoading(true);
-    const [exp, sum] = await Promise.all([
-      financesApi.getExpenses(year, month),
-      financesApi.getSummary(year, month),
-    ]);
-    setExpenses(exp.data);
-    setSummary(sum.data);
-    setLoading(false);
+  const onAddExpense = async (data: ExpenseForm) => {
+    await addExpense(data);
+    reset({ name: '', amount: '', type: 'variable', category: '', date: now.toISOString().split('T')[0] });
   };
 
-  const loadCategories = async () => {
-    const res = await financesApi.getCategories();
-    setCustomCategories(res.data);
-  };
-
-  useEffect(() => {
-    load();
-    loadCategories();
-  }, []);
-
-  const addExpense = async (data: ExpenseForm) => {
-    await financesApi.createExpense({ ...data, amount: Number(data.amount) } as any);
-    reset({ name: '', amount: '', type: 'variable', category: '', date: new Date().toISOString().split('T')[0] });
-    load();
-  };
-
-  const saveIncome = async () => {
+  const onSaveIncome = async () => {
     const val = Number(incomeInput);
     if (!incomeInput || isNaN(val) || val <= 0) return;
     const monthStr = `${year}-${String(month).padStart(2, '0')}-01`;
-    await financesApi.setIncome(val, monthStr);
+    await saveIncome(val, monthStr);
     setIncomeEditing(false);
     setIncomeInput('');
-    load();
   };
 
-  const saveNewCategory = async () => {
+  const onSaveCategory = async () => {
     const name = newCategoryName.trim();
     if (!name) return;
-    await financesApi.createCategory(name);
+    await saveCategory(name);
     setNewCategoryName('');
     setAddingCategory(false);
     setValue('category', name);
-    loadCategories();
   };
 
-  const spentPct = summary?.totalIncome && summary.totalIncome > 0
-    ? Math.min((summary.totalSpent / summary.totalIncome) * 100, 100)
-    : 0;
-
-  const monthName = now.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
-
-  const byCategory = summary?.byCategory ?? {};
+  const spentPct       = summary ? computeSpentPct(summary.totalSpent, summary.totalIncome) : 0;
+  const monthName      = now.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+  const byCategory     = summary?.byCategory ?? {};
   const categoryEntries = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
   const maxCategorySpend = categoryEntries[0]?.[1] ?? 1;
 
@@ -180,30 +147,23 @@ export function FinancesPage() {
       )}
 
       <div className={styles.twoCol}>
-
         <div className={styles.leftCol}>
 
-          {/* ── Income card ── */}
           <div className={styles.card}>
             <div className={styles.labelSm}><Icon name="trending_up" size={11} /> Ingreso mensual</div>
-
             {incomeEditing ? (
               <div className={styles.incomeRow}>
                 <input
                   type="number"
                   value={incomeInput}
                   onChange={(e) => setIncomeInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') saveIncome(); if (e.key === 'Escape') setIncomeEditing(false); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onSaveIncome(); if (e.key === 'Escape') setIncomeEditing(false); }}
                   placeholder="Nuevo ingreso"
                   className={styles.input}
                   autoFocus
                 />
-                <button onClick={saveIncome} className={styles.saveBtn}>
-                  <Icon name="check" size={16} />
-                </button>
-                <button onClick={() => setIncomeEditing(false)} className={styles.cancelBtn}>
-                  <Icon name="close" size={16} />
-                </button>
+                <button onClick={onSaveIncome} className={styles.saveBtn}><Icon name="check" size={16} /></button>
+                <button onClick={() => setIncomeEditing(false)} className={styles.cancelBtn}><Icon name="close" size={16} /></button>
               </div>
             ) : (
               <div className={styles.incomeDisplay}>
@@ -221,24 +181,13 @@ export function FinancesPage() {
             )}
           </div>
 
-          {/* ── Expense form ── */}
           <div className={styles.card}>
             <div className={styles.labelSm}><Icon name="add_circle" size={11} /> Nuevo gasto</div>
-            <form onSubmit={handleSubmit(addExpense)} className={styles.expenseForm}>
-              <input
-                type="text"
-                placeholder="Descripción"
-                className={styles.input}
-                {...register('name', { required: 'Requerido' })}
-              />
+            <form onSubmit={handleSubmit(onAddExpense)} className={styles.expenseForm}>
+              <input type="text" placeholder="Descripción" className={styles.input} {...register('name', { required: 'Requerido' })} />
               {errors.name && <span className={styles.fieldError}>{errors.name.message}</span>}
 
-              <input
-                type="number"
-                placeholder="Monto"
-                className={styles.input}
-                {...register('amount', { required: 'Requerido', min: { value: 0.01, message: 'Monto inválido' } })}
-              />
+              <input type="number" placeholder="Monto" className={styles.input} {...register('amount', { required: 'Requerido', min: { value: 0.01, message: 'Monto inválido' } })} />
               {errors.amount && <span className={styles.fieldError}>{errors.amount.message}</span>}
 
               <div className={styles.inputGrid}>
@@ -247,7 +196,6 @@ export function FinancesPage() {
                   <option value="fixed">Fijo</option>
                 </select>
 
-                {/* Category selector */}
                 {addingCategory ? (
                   <div className={styles.newCategoryRow}>
                     <input
@@ -255,49 +203,34 @@ export function FinancesPage() {
                       placeholder="Nueva categoría"
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveNewCategory(); } if (e.key === 'Escape') setAddingCategory(false); }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSaveCategory(); } if (e.key === 'Escape') setAddingCategory(false); }}
                       autoFocus
                     />
-                    <button type="button" onClick={saveNewCategory} className={styles.saveBtn}>
-                      <Icon name="check" size={14} />
-                    </button>
-                    <button type="button" onClick={() => setAddingCategory(false)} className={styles.cancelBtn}>
-                      <Icon name="close" size={14} />
-                    </button>
+                    <button type="button" onClick={onSaveCategory} className={styles.saveBtn}><Icon name="check" size={14} /></button>
+                    <button type="button" onClick={() => setAddingCategory(false)} className={styles.cancelBtn}><Icon name="close" size={14} /></button>
                   </div>
                 ) : (
                   <select
                     className={styles.input}
                     value={watch('category')}
                     onChange={(e) => {
-                      if (e.target.value === '__new__') {
-                        setAddingCategory(true);
-                      } else {
-                        setValue('category', e.target.value);
-                      }
+                      if (e.target.value === '__new__') { setAddingCategory(true); }
+                      else { setValue('category', e.target.value); }
                     }}
                   >
                     <option value="">Categoría</option>
-                    {allCategories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
+                    {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
                     <option value="__new__">+ Nueva categoría…</option>
                   </select>
                 )}
               </div>
 
-              <input
-                type="date"
-                className={styles.input}
-                {...register('date', { required: 'Requerido' })}
-              />
-
+              <input type="date" className={styles.input} {...register('date', { required: 'Requerido' })} />
               <button type="submit" className={styles.submitBtn}>Registrar gasto</button>
             </form>
           </div>
         </div>
 
-        {/* ── Ledger ── */}
         <div className={styles.card}>
           <div className={styles.labelSm}><Icon name="receipt_long" size={11} /> Ledger de transacciones</div>
 
@@ -318,7 +251,6 @@ export function FinancesPage() {
                     <p className={styles.expenseName}>{e.name}</p>
                     {e.category && <p className={styles.expenseCategory}>{e.category}</p>}
                   </div>
-
                   <span
                     className={styles.tag}
                     style={{
@@ -328,15 +260,10 @@ export function FinancesPage() {
                   >
                     {e.type === 'fixed' ? 'Fijo' : 'Variable'}
                   </span>
-
                   <span className={styles.expenseAmount}>
                     ${Number(e.amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   </span>
-
-                  <button
-                    onClick={() => financesApi.deleteExpense(e.id).then(load)}
-                    className={styles.deleteBtn}
-                  >
+                  <button onClick={() => deleteExpense(e.id)} className={styles.deleteBtn}>
                     <Icon name="close" size={16} />
                   </button>
                 </div>
@@ -353,22 +280,18 @@ export function FinancesPage() {
         </div>
       </div>
 
-      {/* ── Category breakdown ── */}
       {!loading && categoryEntries.length > 0 && (
         <div className={styles.card}>
           <div className={styles.labelSm}><Icon name="donut_small" size={11} /> Gasto por categoría</div>
           <div className={styles.categoryBreakdown}>
             {categoryEntries.map(([cat, amount]) => {
-              const pct = summary?.totalSpent ? (amount / summary.totalSpent) * 100 : 0;
+              const pct    = summary?.totalSpent ? (amount / summary.totalSpent) * 100 : 0;
               const barPct = (amount / maxCategorySpend) * 100;
               return (
                 <div key={cat} className={styles.categoryRow}>
                   <span className={styles.categoryName}>{cat}</span>
                   <div className={styles.categoryBarWrap}>
-                    <div
-                      className={styles.categoryBar}
-                      style={{ width: `${barPct}%` }}
-                    />
+                    <div className={styles.categoryBar} style={{ width: `${barPct}%` }} />
                   </div>
                   <span className={styles.categoryAmount}>
                     ${Number(amount).toLocaleString('es-MX', { maximumFractionDigits: 0 })}
@@ -380,7 +303,6 @@ export function FinancesPage() {
           </div>
         </div>
       )}
-
     </div>
   );
-}
+};

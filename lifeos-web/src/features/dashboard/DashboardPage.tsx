@@ -1,134 +1,13 @@
-import { useEffect, useState, useCallback } from 'react';
-import { dashboardApi } from '../../api/dashboard';
-import { habitsApi } from '../../api/habits';
-import api from '../../api/client';
 import { Icon } from '../../components/Icon';
-import type { DashboardData } from '../../ts/dashboard';
-import type { Habit } from '../../ts/habits';
+import { getGreeting } from '../../domain/dashboard/dashboardUtils';
+import useDashboard from './hooks/useDashboard';
+import { ProgressBar } from './components/ProgressBar';
+import { EnergyInput } from './components/EnergyInput';
+import { DashboardHabitRow } from './components/DashboardHabitRow';
 import styles from './DashboardPage.module.css';
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  return (
-    <div className={styles.progressTrack}>
-      <div className={styles.progressFill} style={{ width: `${pct}%`, background: color }} />
-    </div>
-  );
-}
-
-function energyLabel(n: number) {
-  if (n <= 2) return 'Agotado';
-  if (n <= 4) return 'Bajo';
-  if (n <= 6) return 'Normal';
-  if (n <= 8) return 'Bien';
-  return 'Excelente';
-}
-
-function EnergyInput({ initial, date, onChange }: { initial: number | null; date: string; onChange: (v: number) => void }) {
-  const [level, setLevel] = useState<number>(initial ?? 0);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(!!initial);
-
-  const save = async (val: number) => {
-    setSaving(true);
-    await api.post('/energy', { date, level: val });
-    setSaving(false); setSaved(true); onChange(val);
-    setTimeout(() => setSaved(false), 1500);
-  };
-
-  const glowOpacity = level > 0 ? Math.min(level / 10 * 0.25, 0.25) : 0;
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
-        <span
-          className={styles.energyNumber}
-          style={{
-            color: level > 0 ? 'var(--color-tertiary)' : 'var(--color-surface-container-high)',
-            textShadow: level > 0 ? `0 0 40px rgba(255, 185, 95, ${glowOpacity})` : 'none',
-          }}
-        >
-          {level > 0 ? level : '—'}
-        </span>
-        <div className={styles.energyMeta}>
-          {level > 0 && (
-            <p className={styles.energyStatusText} style={{ color: 'var(--color-tertiary)' }}>
-              {energyLabel(level)}
-            </p>
-          )}
-          {saving && <p className={styles.energySavingText}>guardando…</p>}
-          {saved && !saving && (
-            <p className={styles.energySavingText} style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <Icon name="check_circle" size={11} filled /> guardado
-            </p>
-          )}
-        </div>
-      </div>
-      <input type="range" min={1} max={10} value={level || 1}
-        onChange={(e) => setLevel(Number(e.target.value))}
-        onMouseUp={(e) => save(Number((e.target as HTMLInputElement).value))}
-        onTouchEnd={(e) => save(Number((e.target as HTMLInputElement).value))}
-      />
-      <div className={styles.energyTicks}>
-        {Array.from({ length: 10 }, (_, i) => (
-          <span
-            key={i}
-            className={styles.energyTick}
-            style={{
-              fontWeight: level === i + 1 ? 700 : 400,
-              color: level === i + 1 ? 'var(--color-tertiary)' : 'var(--color-surface-container-high)',
-            }}
-          >
-            {i + 1}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function HabitRow({ habit, date, onToggle }: { habit: Habit; date: string; onToggle: () => void }) {
-  const [pending, setPending] = useState(false);
-  const toggle = async () => {
-    setPending(true);
-    await habitsApi.toggle(habit.id, date);
-    onToggle();
-    setPending(false);
-  };
-  return (
-    <li className={styles.habitRow}>
-      <button
-        onClick={toggle}
-        disabled={pending}
-        className={styles.habitToggle}
-        style={{
-          border: `2px solid ${habit.completed ? 'var(--color-secondary)' : 'var(--color-surface-container-high)'}`,
-          background: habit.completed
-            ? 'linear-gradient(135deg, var(--color-secondary-container), var(--color-secondary))'
-            : 'transparent',
-          boxShadow: habit.completed ? '0 0 8px rgba(192, 193, 255, 0.25)' : 'none',
-        }}
-      >
-        {habit.completed && <Icon name="check" size={10} />}
-      </button>
-      <span
-        className={`${styles.habitName} ${habit.completed ? styles.habitNameCompleted : ''}`}
-        style={{ color: habit.completed ? 'var(--color-on-surface-variant)' : 'var(--color-on-surface)' }}
-      >
-        {habit.name}
-      </span>
-    </li>
-  );
-}
-
-export function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(() =>
-    dashboardApi.getDaily().then((res) => { setData(res.data); setLoading(false); }), []);
-
-  useEffect(() => { load(); }, [load]);
+export const DashboardPage = () => {
+  const { data, setData, loading, reload } = useDashboard();
 
   if (loading) {
     return (
@@ -189,18 +68,11 @@ export function DashboardPage() {
   const remaining = data.summary.remaining;
   const spentPct  = income > 0 ? Math.min((spent / income) * 100, 100) : 0;
 
-  const greeting = (() => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Buenos días';
-    if (h < 19) return 'Buenas tardes';
-    return 'Buenas noches';
-  })();
-
   return (
     <div className={styles.page}>
 
       <div className={styles.hero}>
-        <h1 className={styles.heroTitle}>{greeting}</h1>
+        <h1 className={styles.heroTitle}>{getGreeting()}</h1>
         <p className={styles.heroDate}>
           {new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
@@ -316,7 +188,7 @@ export function DashboardPage() {
           ) : (
             <ul className={styles.habitList}>
               {data.habits.slice(0, 5).map((h) => (
-                <HabitRow key={h.id} habit={h} date={data.date} onToggle={load} />
+                <DashboardHabitRow key={h.id} habit={h} date={data.date} onToggle={reload} />
               ))}
               {data.habits.length > 5 && (
                 <li className={styles.moreHabits}>+{data.habits.length - 5} rituales más</li>
@@ -379,4 +251,4 @@ export function DashboardPage() {
       )}
     </div>
   );
-}
+};

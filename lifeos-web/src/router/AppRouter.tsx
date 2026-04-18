@@ -8,21 +8,21 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { Sidebar } from '../components/Sidebar';
 import styles from './AppRouter.module.css';
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
-}
+};
 
-function AppShell({ children }: { children: React.ReactNode }) {
+const AppShell = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className={styles.shell}>
       <Sidebar />
       <main className={styles.main}>{children}</main>
     </div>
   );
-}
+};
 
-export function AppRouter() {
+export const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>

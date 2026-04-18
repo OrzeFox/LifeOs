@@ -1,99 +1,26 @@
-import { useEffect, useState } from 'react';
-import api from '../../api/client';
+import { useState, type FormEvent } from 'react';
 import { Icon } from '../../components/Icon';
-import type { Meal, MealForm, DailySummary } from '../../ts/routine';
+import type { MealForm } from '../../ts/routine';
 import { MEAL_TYPES, TIME_SLOTS } from '../../ts/routine';
+import { slotColor } from '../../domain/routine/slotColor';
+import { NUTRITION_GOALS } from '../../domain/routine/nutritionGoals';
+import useRoutine from './hooks/useRoutine';
+import useRoutineHistory from './hooks/useRoutineHistory';
+import { NutritionPill } from './components/NutritionPill';
+import { EditMealRow } from './components/EditMealRow';
 import styles from './RoutinePage.module.css';
 
-const NUTRITION_GOALS = { calories: 2000, protein: 150, carbs: 250, fat: 65, fiber: 30 };
-
-function slotColor(time?: string): string {
-  if (!time) return 'var(--color-outline)';
-  const h = parseInt(time.split(':')[0], 10);
-  if (h < 10) return 'var(--color-tertiary)';
-  if (h < 14) return 'var(--color-primary)';
-  if (h < 18) return 'var(--color-secondary)';
-  return 'var(--color-on-surface-variant)';
-}
-
-function NutritionPill({ label, value, unit }: { label: string; value?: number; unit?: string }) {
-  if (!value) return null;
-  return (
-    <span className={styles.nutritionPill}>
-      {label} <strong>{value}{unit ?? 'g'}</strong>
-    </span>
-  );
-}
-
-function EditMealRow({ meal, onSave, onCancel }: {
-  meal: Meal;
-  onSave: (data: Partial<Meal>) => Promise<void>;
-  onCancel: () => void;
-}) {
-  const [mealType, setMealType] = useState(meal.mealType);
-  const [scheduledTime, setScheduledTime] = useState(meal.scheduledTime ?? '');
-  const [description, setDescription] = useState(meal.description ?? '');
-  const [saving, setSaving] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    await onSave({ mealType, scheduledTime, description });
-    setSaving(false);
-  };
-
-  return (
-    <form onSubmit={submit} className={styles.editForm}>
-      <select value={mealType} onChange={(e) => setMealType(e.target.value as any)} className={styles.input}>
-        {MEAL_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-      </select>
-      <select value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className={styles.input}>
-        <option value="">Sin hora</option>
-        {TIME_SLOTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-      </select>
-      <input
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Descripción de la comida…"
-        className={styles.input}
-      />
-      <div className={styles.editActions}>
-        <button type="submit" disabled={saving} className={styles.saveEditBtn}>
-          {saving ? <span className={styles.savingDot} /> : <Icon name="check" size={14} />}
-          {saving ? 'Analizando…' : 'Guardar'}
-        </button>
-        <button type="button" onClick={onCancel} className={styles.cancelEditBtn}>Cancelar</button>
-      </div>
-    </form>
-  );
-}
-
-export function RoutinePage() {
+export const RoutinePage = () => {
   const today = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(today);
-  const [summary, setSummary] = useState<DailySummary | null>(null);
-  const [historyDates, setHistoryDates] = useState<string[]>([]);
-  const [loadingSummary, setLoadingSummary] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState<MealForm>({
+  const [editingId, setEditingId]       = useState<string | null>(null);
+  const [adding, setAdding]             = useState(false);
+  const [form, setForm]                 = useState<MealForm>({
     mealType: 'almuerzo', scheduledTime: '12:30', description: '', date: today,
   });
 
-  const load = async (date = selectedDate) => {
-    setLoadingSummary(true);
-    const res = await api.get('/routine/meals/summary', { params: { date } });
-    setSummary(res.data);
-    setLoadingSummary(false);
-  };
-
-  const loadHistory = async () => {
-    const res = await api.get('/routine/meals/history');
-    setHistoryDates(res.data);
-  };
-
-  useEffect(() => { load(selectedDate); }, [selectedDate]);
-  useEffect(() => { loadHistory(); }, []);
+  const { summary, loading, add, update, remove } = useRoutine(selectedDate);
+  const { historyDates, reloadHistory }           = useRoutineHistory();
 
   const selectDate = (d: string) => {
     setSelectedDate(d);
@@ -101,28 +28,26 @@ export function RoutinePage() {
     setEditingId(null);
   };
 
-  const add = async (e: React.FormEvent) => {
+  const handleAdd = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAdding(true);
-    await api.post('/routine/meals', form);
+    await add(form);
+    await reloadHistory();
     setForm((f) => ({ ...f, description: '' }));
-    await Promise.all([load(selectedDate), loadHistory()]);
     setAdding(false);
   };
 
-  const update = async (id: string, data: Partial<Meal>) => {
-    await api.patch(`/routine/meals/${id}`, data);
+  const handleUpdate = async (id: string, data: Parameters<typeof update>[1]) => {
+    await update(id, data);
     setEditingId(null);
-    load(selectedDate);
   };
 
-  const remove = async (id: string) => {
-    await api.delete(`/routine/meals/${id}`);
-    load(selectedDate);
-    loadHistory();
+  const handleRemove = async (id: string) => {
+    await remove(id);
+    await reloadHistory();
   };
 
-  const meals = summary?.meals ?? [];
+  const meals  = summary?.meals ?? [];
   const totals = summary?.totals;
   const sorted = [...meals].sort((a, b) => {
     if (!a.scheduledTime) return 1;
@@ -132,7 +57,6 @@ export function RoutinePage() {
 
   const displayDate = new Date(selectedDate + 'T00:00:00')
     .toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-
   const isToday = selectedDate === today;
 
   return (
@@ -154,7 +78,6 @@ export function RoutinePage() {
         />
       </div>
 
-      {/* Daily nutrition totals */}
       {totals && totals.calories > 0 && (
         <div className={styles.nutritionCard}>
           <div className={styles.labelSm}><Icon name="monitor_heart" size={11} /> Resumen nutricional del día</div>
@@ -189,11 +112,10 @@ export function RoutinePage() {
 
       <div className={styles.grid}>
 
-        {/* Timeline */}
         <div className={styles.card}>
           <div className={styles.labelSm}><Icon name="schedule" size={11} /> Línea de tiempo</div>
 
-          {loadingSummary ? (
+          {loading ? (
             <div className={styles.skeletonList}>
               {[1, 2, 3].map((i) => (
                 <div key={i} className={styles.skeletonRow}>
@@ -213,7 +135,7 @@ export function RoutinePage() {
           ) : (
             <div className={styles.mealList}>
               {sorted.map((m) => {
-                const color = slotColor(m.scheduledTime);
+                const color     = slotColor(m.scheduledTime);
                 const typeLabel = MEAL_TYPES.find((t) => t.value === m.mealType)?.label ?? m.mealType;
                 const isEditing = editingId === m.id;
 
@@ -222,7 +144,7 @@ export function RoutinePage() {
                     {isEditing ? (
                       <EditMealRow
                         meal={m}
-                        onSave={(data) => update(m.id, data)}
+                        onSave={(data) => handleUpdate(m.id, data)}
                         onCancel={() => setEditingId(null)}
                       />
                     ) : (
@@ -248,7 +170,7 @@ export function RoutinePage() {
                           <button onClick={() => setEditingId(m.id)} className={styles.editRowBtn}>
                             <Icon name="edit" size={14} />
                           </button>
-                          <button onClick={() => remove(m.id)} className={styles.deleteBtn}>
+                          <button onClick={() => handleRemove(m.id)} className={styles.deleteBtn}>
                             <Icon name="close" size={14} />
                           </button>
                         </div>
@@ -261,13 +183,11 @@ export function RoutinePage() {
           )}
         </div>
 
-        {/* Right column */}
         <div className={styles.rightCol}>
 
-          {/* Add form */}
           <div className={styles.card}>
             <div className={styles.labelSm}><Icon name="add_circle" size={11} /> Agregar comida</div>
-            <form onSubmit={add} className={styles.form}>
+            <form onSubmit={handleAdd} className={styles.form}>
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Tipo</label>
                 <select
@@ -317,7 +237,6 @@ export function RoutinePage() {
             </form>
           </div>
 
-          {/* History */}
           {historyDates.length > 0 && (
             <div className={styles.card}>
               <div className={styles.labelSm}><Icon name="history" size={11} /> Historial</div>
@@ -344,4 +263,4 @@ export function RoutinePage() {
       </div>
     </div>
   );
-}
+};

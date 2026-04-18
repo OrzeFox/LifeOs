@@ -25,9 +25,9 @@ function computeProgress(habit: Habit, value: number, checklistState?: boolean[]
 
 function isCompleted(habit: Habit, value: number, checklistState?: boolean[]): boolean {
   switch (habit.habitType) {
-    case HabitType.SIMPLE:    return value >= 1;
+    case HabitType.SIMPLE: return value >= 1;
     case HabitType.TIMER:
-    case HabitType.NUMERIC:   return value >= (habit.targetValue ?? 1);
+    case HabitType.NUMERIC: return value >= (habit.targetValue ?? 1);
     case HabitType.CHECKLIST: {
       const items = habit.checklistItems ?? [];
       return items.length > 0 && (checklistState ?? []).every(Boolean);
@@ -50,7 +50,7 @@ export class HabitsService {
     private readonly habitsRepo: Repository<Habit>,
     @InjectRepository(HabitLog)
     private readonly logsRepo: Repository<HabitLog>,
-  ) {}
+  ) { }
 
   createHabit(userId: string, data: Partial<Habit>) {
     const habit = this.habitsRepo.create({ ...data, user: { id: userId } });
@@ -73,6 +73,7 @@ export class HabitsService {
     const habit = await this.habitsRepo.findOne({ where: { id: habitId } });
     let log = await this.logsRepo.findOne({ where: { habit: { id: habitId }, date } });
     const newValue = log?.completed ? 0 : 1;
+    if (!habit) return null;
     const completed = isCompleted(habit, newValue);
     if (!log) {
       log = this.logsRepo.create({ habit: { id: habitId }, date, value: newValue, completed });
@@ -140,9 +141,9 @@ export class HabitsService {
   // ── Calendar: logs for a habit in a month ──
   async getHabitCalendar(habitId: string, year: number, month: number) {
     const start = `${year}-${String(month).padStart(2, '0')}-01`;
-    const end   = new Date(year, month, 0).toISOString().split('T')[0];
+    const end = new Date(year, month, 0).toISOString().split('T')[0];
     const habit = await this.habitsRepo.findOne({ where: { id: habitId } });
-    const logs  = await this.logsRepo.find({
+    const logs = await this.logsRepo.find({
       where: { habit: { id: habitId }, date: Between(start, end) },
     });
 
@@ -154,6 +155,7 @@ export class HabitsService {
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const log = logMap.get(dateStr);
       const value = log?.value ?? 0;
+      if (!habit) return null;
       result.push({
         date: dateStr,
         scheduled: isScheduledForDate(habit, dateStr),
@@ -168,12 +170,12 @@ export class HabitsService {
   // ── History: last N days for comparison ──
   async getHabitHistory(habitId: string, days = 14) {
     const habit = await this.habitsRepo.findOne({ where: { id: habitId } });
-    const end   = new Date();
+    const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - days + 1);
 
     const startStr = start.toISOString().split('T')[0];
-    const endStr   = end.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
 
     const logs = await this.logsRepo.find({
       where: { habit: { id: habitId }, date: Between(startStr, endStr) },
@@ -188,6 +190,7 @@ export class HabitsService {
       const dateStr = d.toISOString().split('T')[0];
       const log = logMap.get(dateStr);
       const value = log?.value ?? 0;
+      if (!habit) return null;
       result.push({
         date: dateStr,
         completed: log?.completed ?? false,

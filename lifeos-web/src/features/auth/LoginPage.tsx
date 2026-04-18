@@ -1,33 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authApi } from '../../api/auth';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useState, type FormEvent } from 'react';
 import type { LoginForm } from '../../ts/auth';
+import useLogin from './hooks/useLogin';
 import styles from './LoginPage.module.css';
 
-export function LoginPage() {
-  const navigate = useNavigate();
-  const { login } = useAuthStore();
+export const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [form, setForm] = useState<LoginForm>({ email: '', password: '', name: '' });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { error, loading, submit } = useLogin();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const res = mode === 'login'
-        ? await authApi.login(form.email, form.password)
-        : await authApi.register(form.email, form.password, form.name);
-      login(res.data.access_token);
-      navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al conectar');
-    } finally {
-      setLoading(false);
-    }
+    submit(mode, form.email, form.password, form.name);
   };
 
   return (
@@ -80,4 +63,4 @@ export function LoginPage() {
       </div>
     </div>
   );
-}
+};
