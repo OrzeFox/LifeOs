@@ -24,7 +24,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
         autoLoadEntities: true,
         ssl: { rejectUnauthorized: false },
         extra: { family: 4 },
-        synchronize: true,
+        synchronize: false,
       }),
     }),
     AuthModule,
