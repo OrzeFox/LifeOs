@@ -1,5 +1,6 @@
 import { Icon } from '../../components/Icon';
 import { getGreeting } from '../../domain/dashboard/dashboardUtils';
+import { MEAL_TYPES } from '../../ts/routine';
 import useDashboard from './hooks/useDashboard';
 import { ProgressBar } from './components/ProgressBar';
 import { EnergyInput } from './components/EnergyInput';
@@ -222,7 +223,7 @@ export const DashboardPage = () => {
                 <div key={m.id} className={styles.mealRow}>
                   <span className={styles.mealTime}>{m.scheduledTime?.slice(0, 5) ?? '--:--'}</span>
                   <div style={{ flex: 1 }}>
-                    <p className={styles.mealName}>{m.name}</p>
+                    <p className={styles.mealName}>{MEAL_TYPES.find((t) => t.value === m.mealType)?.label ?? m.mealType}</p>
                     {m.description && <p className={styles.mealDesc}>{m.description}</p>}
                   </div>
                 </div>

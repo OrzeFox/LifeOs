@@ -15,7 +15,7 @@ const useLogin = () => {
     try {
       const res = mode === 'login'
         ? await authApi.login(email, password)
-        : await authApi.register(email, password, name);
+        : await authApi.register(email, password, name ?? '');
       login(res.data.access_token);
       navigate('/');
     } catch (err: any) {
