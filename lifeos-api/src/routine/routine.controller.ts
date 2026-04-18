@@ -10,7 +10,7 @@ import { UpdateMealDto } from './dto/update-meal.dto';
 export class RoutineController {
   private readonly logger = new Logger(RoutineController.name);
 
-  constructor(private readonly routineService: RoutineService) {}
+  constructor(private readonly routineService: RoutineService) { }
 
   @Post('meals')
   create(@CurrentUser() user, @Body() dto: CreateMealDto) {

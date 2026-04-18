@@ -24,7 +24,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
         autoLoadEntities: true,
         ssl: { rejectUnauthorized: false },
         extra: { family: 4 },
-        // synchronize: true, // solo dev — en prod usar migraciones
+        synchronize: true,
       }),
     }),
     AuthModule,
