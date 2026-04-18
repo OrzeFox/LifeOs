@@ -32,7 +32,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(process.env.PORT ?? 3000);
-  logger.log(`LifeOS API corriendo en http://localhost:${process.env.PORT ?? 3000}/api`);
   logger.log(`Logs guardados en: ${LOG_FILE}`);
 }
 bootstrap();
