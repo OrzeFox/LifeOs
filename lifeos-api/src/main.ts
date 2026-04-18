@@ -28,7 +28,11 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   app.setGlobalPrefix('api');
-  app.enableCors({ origin: 'http://localhost:5173' });
+  const allowedOrigins = [
+    'http://localhost:5173',
+    ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : []),
+  ];
+  app.enableCors({ origin: allowedOrigins });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(process.env.PORT ?? 3000);
