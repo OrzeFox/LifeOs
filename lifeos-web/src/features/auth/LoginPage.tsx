@@ -1,16 +1,19 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import type { LoginForm } from '../../ts/auth';
 import useLogin from './hooks/useLogin';
 import styles from './LoginPage.module.css';
 
 export const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [form, setForm] = useState<LoginForm>({ email: '', password: '', name: '' });
   const { error, loading, submit } = useLogin();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    submit(mode, form.email, form.password, form.name);
+  const { register, handleSubmit } = useForm<LoginForm>({
+    defaultValues: { email: '', password: '', name: '' },
+  });
+
+  const onSubmit = (data: LoginForm) => {
+    submit(mode, data.email, data.password, data.name);
   };
 
   return (
@@ -21,32 +24,26 @@ export const LoginPage = () => {
           {mode === 'login' ? 'Inicia sesión' : 'Crea tu cuenta'}
         </p>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
           {mode === 'register' && (
             <input
               type="text"
               placeholder="Nombre"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
               className={styles.input}
-              required
+              {...register('name', { required: mode === 'register' })}
             />
           )}
           <input
             type="email"
             placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
             className={styles.input}
-            required
+            {...register('email', { required: true })}
           />
           <input
             type="password"
             placeholder="Contraseña"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
             className={styles.input}
-            required
+            {...register('password', { required: true })}
           />
           {error && <p className={styles.error}>{error}</p>}
           <button type="submit" disabled={loading} className={styles.submitBtn}>

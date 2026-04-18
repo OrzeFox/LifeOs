@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Icon } from '../../components/Icon';
-import type { MealForm } from '../../ts/routine';
+import type { MealType } from '../../ts/routine';
 import { MEAL_TYPES, TIME_SLOTS } from '../../ts/routine';
 import { slotColor } from '../../domain/routine/slotColor';
 import { NUTRITION_GOALS } from '../../domain/routine/nutritionGoals';
@@ -10,32 +11,37 @@ import { NutritionPill } from './components/NutritionPill';
 import { EditMealRow } from './components/EditMealRow';
 import styles from './RoutinePage.module.css';
 
+type AddMealFormValues = {
+  mealType: MealType;
+  scheduledTime: string;
+  description: string;
+};
+
 export const RoutinePage = () => {
   const today = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(today);
   const [editingId, setEditingId]       = useState<string | null>(null);
   const [adding, setAdding]             = useState(false);
-  const [form, setForm]                 = useState<MealForm>({
-    mealType: 'almuerzo', scheduledTime: '12:30', description: '', date: today,
-  });
 
   const { summary, loading, add, update, remove } = useRoutine(selectedDate);
   const { historyDates, reloadHistory }           = useRoutineHistory();
 
+  const { register, handleSubmit, setValue } = useForm<AddMealFormValues>({
+    defaultValues: { mealType: 'almuerzo', scheduledTime: '12:30', description: '' },
+  });
+
   const selectDate = (d: string) => {
     setSelectedDate(d);
-    setForm((f) => ({ ...f, date: d }));
     setEditingId(null);
   };
 
-  const handleAdd = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onAddMeal = handleSubmit(async (data) => {
     setAdding(true);
-    await add(form);
+    await add({ ...data, date: selectedDate });
     await reloadHistory();
-    setForm((f) => ({ ...f, description: '' }));
+    setValue('description', '');
     setAdding(false);
-  };
+  });
 
   const handleUpdate = async (id: string, data: Parameters<typeof update>[1]) => {
     await update(id, data);
@@ -187,14 +193,10 @@ export const RoutinePage = () => {
 
           <div className={styles.card}>
             <div className={styles.labelSm}><Icon name="add_circle" size={11} /> Agregar comida</div>
-            <form onSubmit={handleAdd} className={styles.form}>
+            <form onSubmit={onAddMeal} className={styles.form}>
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Tipo</label>
-                <select
-                  value={form.mealType}
-                  onChange={(e) => setForm({ ...form, mealType: e.target.value as any })}
-                  className={styles.input}
-                >
+                <select className={styles.input} {...register('mealType')}>
                   {MEAL_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
@@ -203,11 +205,7 @@ export const RoutinePage = () => {
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Franja horaria</label>
-                <select
-                  value={form.scheduledTime}
-                  onChange={(e) => setForm({ ...form, scheduledTime: e.target.value })}
-                  className={styles.input}
-                >
+                <select className={styles.input} {...register('scheduledTime')}>
                   <option value="">Sin hora</option>
                   {TIME_SLOTS.map((s) => (
                     <option key={s.value} value={s.value}>{s.label}</option>
@@ -221,10 +219,9 @@ export const RoutinePage = () => {
                   <span className={styles.formLabelOptional}> · Claude analiza la nutrición</span>
                 </label>
                 <input
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Ej: 200g pechuga a la plancha con arroz integral…"
                   className={styles.input}
+                  {...register('description')}
                 />
               </div>
 

@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Icon } from '../../../components/Icon';
-import type { Meal } from '../../../ts/routine';
+import type { Meal, MealType } from '../../../ts/routine';
 import { MEAL_TYPES, TIME_SLOTS } from '../../../ts/routine';
 import styles from '../RoutinePage.module.css';
 
@@ -10,33 +11,42 @@ interface EditMealRowProps {
   onCancel: () => void;
 }
 
-export const EditMealRow = ({ meal, onSave, onCancel }: EditMealRowProps) => {
-  const [mealType, setMealType]         = useState(meal.mealType);
-  const [scheduledTime, setScheduledTime] = useState(meal.scheduledTime ?? '');
-  const [description, setDescription]   = useState(meal.description ?? '');
-  const [saving, setSaving]             = useState(false);
+type EditMealFormValues = {
+  mealType: MealType;
+  scheduledTime: string;
+  description: string;
+};
 
-  const submit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+export const EditMealRow = ({ meal, onSave, onCancel }: EditMealRowProps) => {
+  const [saving, setSaving] = useState(false);
+
+  const { register, handleSubmit } = useForm<EditMealFormValues>({
+    defaultValues: {
+      mealType:      meal.mealType,
+      scheduledTime: meal.scheduledTime ?? '',
+      description:   meal.description ?? '',
+    },
+  });
+
+  const onSubmit = handleSubmit(async (data) => {
     setSaving(true);
-    await onSave({ mealType, scheduledTime, description });
+    await onSave(data);
     setSaving(false);
-  };
+  });
 
   return (
-    <form onSubmit={submit} className={styles.editForm}>
-      <select value={mealType} onChange={(e) => setMealType(e.target.value as any)} className={styles.input}>
+    <form onSubmit={onSubmit} className={styles.editForm}>
+      <select className={styles.input} {...register('mealType')}>
         {MEAL_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
       </select>
-      <select value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className={styles.input}>
+      <select className={styles.input} {...register('scheduledTime')}>
         <option value="">Sin hora</option>
         {TIME_SLOTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
       </select>
       <input
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
         placeholder="Descripción de la comida…"
         className={styles.input}
+        {...register('description')}
       />
       <div className={styles.editActions}>
         <button type="submit" disabled={saving} className={styles.saveEditBtn}>
