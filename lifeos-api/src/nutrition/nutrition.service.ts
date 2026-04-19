@@ -1,20 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Meal } from './entities/meal.entity';
-import { NutritionService } from './nutrition.service';
+import { NutritionAnalyzerService } from './nutrition-analyzer.service';
+
+export interface MacroTotals {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+}
 
 @Injectable()
-export class RoutineService {
+export class NutritionService {
   constructor(
     @InjectRepository(Meal)
     private readonly mealsRepo: Repository<Meal>,
-    private readonly nutritionService: NutritionService,
+    private readonly analyzer: NutritionAnalyzerService,
   ) {}
 
   async createMeal(userId: string, data: Partial<Meal>) {
     const nutrition = data.description
-      ? await this.nutritionService.analyze(data.description)
+      ? await this.analyzer.analyze(data.description)
       : null;
 
     const meal = this.mealsRepo.create({
@@ -32,12 +40,19 @@ export class RoutineService {
     });
   }
 
+  getMealsInRange(userId: string, from: string, to: string) {
+    return this.mealsRepo.find({
+      where: { user: { id: userId }, date: Between(from, to) },
+      order: { date: 'ASC', scheduledTime: 'ASC' },
+    });
+  }
+
   async updateMeal(id: string, userId: string, data: Partial<Meal>) {
     const meal = await this.mealsRepo.findOne({ where: { id, user: { id: userId } } });
     if (!meal) return null;
 
     if (data.description !== undefined && data.description !== meal.description) {
-      const nutrition = await this.nutritionService.analyze(data.description);
+      const nutrition = await this.analyzer.analyze(data.description);
       if (nutrition) Object.assign(data, nutrition);
     }
 
@@ -64,21 +79,37 @@ export class RoutineService {
     });
   }
 
+  sumMacros(meals: Meal[]): MacroTotals {
+    const sum = (key: keyof MacroTotals) =>
+      meals.reduce((acc, m) => acc + (Number((m as any)[key]) || 0), 0);
+    return {
+      calories: Math.round(sum('calories')),
+      protein:  Math.round(sum('protein')),
+      carbs:    Math.round(sum('carbs')),
+      fat:      Math.round(sum('fat')),
+      fiber:    Math.round(sum('fiber')),
+    };
+  }
+
   async getDailySummary(userId: string, date: string) {
     const meals = await this.getMealsForDate(userId, date);
-    const sum = (key: keyof Meal) =>
-      meals.reduce((acc, m) => acc + (Number(m[key]) || 0), 0);
+    return { date, meals, totals: this.sumMacros(meals) };
+  }
 
-    return {
+  async getRangeSummary(userId: string, from: string, to: string) {
+    const meals = await this.getMealsInRange(userId, from, to);
+    const byDate = new Map<string, Meal[]>();
+    for (const m of meals) {
+      const key = String(m.date).split('T')[0];
+      const arr = byDate.get(key) ?? [];
+      arr.push(m);
+      byDate.set(key, arr);
+    }
+    const days = Array.from(byDate.entries()).map(([date, items]) => ({
       date,
-      meals,
-      totals: {
-        calories: Math.round(sum('calories')),
-        protein:  Math.round(sum('protein')),
-        carbs:    Math.round(sum('carbs')),
-        fat:      Math.round(sum('fat')),
-        fiber:    Math.round(sum('fiber')),
-      },
-    };
+      totals: this.sumMacros(items),
+      mealCount: items.length,
+    }));
+    return { from, to, days, totals: this.sumMacros(meals) };
   }
 }

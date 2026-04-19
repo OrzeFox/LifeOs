@@ -3,11 +3,11 @@ import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 import { FinancesModule } from '../finances/finances.module';
 import { HabitsModule } from '../habits/habits.module';
-import { RoutineModule } from '../routine/routine.module';
+import { NutritionModule } from '../nutrition/nutrition.module';
 import { EnergyModule } from '../energy/energy.module';
 
 @Module({
-  imports: [FinancesModule, HabitsModule, RoutineModule, EnergyModule],
+  imports: [FinancesModule, HabitsModule, NutritionModule, EnergyModule],
   controllers: [DashboardController],
   providers: [DashboardService],
 })

@@ -8,6 +8,10 @@ import { GymPage } from '../features/gym/GymPage';
 import { SleepPage } from '../features/sleep/SleepPage';
 import { EventsPage } from '../features/events/EventsPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
+import { JournalPage } from '../features/journal/JournalPage';
+import { GoalsPage } from '../features/goals/GoalsPage';
+import { TemplatesPage } from '../features/templates/TemplatesPage';
+import { OverviewPage } from '../features/overview/OverviewPage';
 import { LoginPage } from '../features/auth/LoginPage';
 import { Sidebar } from '../components/Sidebar';
 import styles from './AppRouter.module.css';
@@ -45,6 +49,10 @@ export const AppRouter = () => {
                   <Route path="/sleep"    element={<SleepPage />} />
                   <Route path="/events"   element={<EventsPage />} />
                   <Route path="/profile"  element={<ProfilePage />} />
+                  <Route path="/journal"  element={<JournalPage />} />
+                  <Route path="/goals"    element={<GoalsPage />} />
+                  <Route path="/templates" element={<TemplatesPage />} />
+                  <Route path="/overview" element={<OverviewPage />} />
                 </Routes>
               </AppShell>
             </PrivateRoute>

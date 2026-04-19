@@ -11,6 +11,10 @@ const NAV_ITEMS = [
   { to: '/gym',      icon: 'fitness_center', label: 'Gimnasio' },
   { to: '/sleep',    icon: 'bedtime', label: 'Sueño' },
   { to: '/events',   icon: 'event', label: 'Eventos' },
+  { to: '/journal',  icon: 'auto_stories', label: 'Journal' },
+  { to: '/goals',    icon: 'flag', label: 'Metas' },
+  { to: '/overview', icon: 'insights', label: 'Semana' },
+  { to: '/templates', icon: 'bookmark', label: 'Plantillas' },
   { to: '/profile',  icon: 'person', label: 'Perfil' },
 ];
 

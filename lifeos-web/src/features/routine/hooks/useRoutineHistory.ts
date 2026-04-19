@@ -6,7 +6,7 @@ const useRoutineHistory = () => {
 
   const load = async () => {
     try {
-      const res = await api.get('/routine/meals/history');
+      const res = await api.get('/nutrition/meals/history');
       setHistoryDates(res.data);
     } catch (err) {
       console.error(err);

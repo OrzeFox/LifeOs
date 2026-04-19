@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Expense, ExpenseType } from './entities/expense.entity';
 import { MonthlyIncome } from './entities/monthly-income.entity';
 import { ExpenseCategory } from './entities/expense-category.entity';
+import { DomainEvents, type DomainEventPayload } from '../smart-alerts/events';
 
 @Injectable()
 export class FinancesService {
@@ -14,10 +16,19 @@ export class FinancesService {
     private readonly incomeRepo: Repository<MonthlyIncome>,
     @InjectRepository(ExpenseCategory)
     private readonly categoriesRepo: Repository<ExpenseCategory>,
+    private readonly events: EventEmitter2,
   ) { }
-  createExpense(userId: string, data: Partial<Expense>) {
+  async createExpense(userId: string, data: Partial<Expense>) {
     const expense = this.expensesRepo.create({ ...data, user: { id: userId } });
-    return this.expensesRepo.save(expense);
+    const saved = await this.expensesRepo.save(expense);
+    const payload: DomainEventPayload = {
+      userId,
+      event: DomainEvents.ExpenseCreated,
+      at: new Date().toISOString(),
+      meta: { expenseId: saved.id, amount: Number(saved.amount) },
+    };
+    this.events.emit(DomainEvents.ExpenseCreated, payload);
+    return saved;
   }
 
   getExpensesByMonth(userId: string, year: number, month: number) {

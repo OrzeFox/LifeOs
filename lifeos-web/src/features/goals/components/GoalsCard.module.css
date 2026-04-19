@@ -1,0 +1,115 @@
+.card {
+  background: var(--color-surface-container);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.labelSm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.btn {
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+.btn:hover { background: var(--color-surface-container-high); }
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rowHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.title {
+  font-size: var(--text-body-md);
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.value {
+  font-size: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.value strong { color: var(--color-on-surface); }
+
+.bar {
+  height: 6px;
+  background: var(--color-surface-container-high);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.barFill.met { background: #2ea44f; }
+.barFill.far { background: var(--color-tertiary); }
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-outline);
+}
+
+.empty {
+  padding: 20px 12px;
+  text-align: center;
+  font-size: var(--text-body-sm);
+  color: var(--color-outline);
+}
+
+.skeleton {
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  opacity: 0.6;
+}

@@ -9,7 +9,7 @@ const useRoutine = (date: string) => {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/routine/meals/summary', { params: { date } });
+      const res = await api.get('/nutrition/meals/summary', { params: { date } });
       setSummary(res.data);
     } catch (err) {
       console.error(err);
@@ -21,17 +21,17 @@ const useRoutine = (date: string) => {
   useEffect(() => { load(); }, [date]);
 
   const add = async (form: MealForm) => {
-    await api.post('/routine/meals', form);
+    await api.post('/nutrition/meals', form);
     await load();
   };
 
   const update = async (id: string, data: Partial<Meal>) => {
-    await api.patch(`/routine/meals/${id}`, data);
+    await api.patch(`/nutrition/meals/${id}`, data);
     await load();
   };
 
   const remove = async (id: string) => {
-    await api.delete(`/routine/meals/${id}`);
+    await api.delete(`/nutrition/meals/${id}`);
     await load();
   };
 

@@ -6,6 +6,11 @@ import { ProgressBar } from './components/ProgressBar';
 import { EnergyInput } from './components/EnergyInput';
 import { EnergyWeekly } from './components/EnergyWeekly';
 import { DashboardHabitRow } from './components/DashboardHabitRow';
+import { StreaksCard } from '../shared/components/StreaksCard';
+import { InsightsPanel } from '../insights/components/InsightsPanel';
+import { EnergyScoreCard } from '../energy-score/components/EnergyScoreCard';
+import { GoalsCard } from '../goals/components/GoalsCard';
+import { PredictionsCard } from '../predictions/components/PredictionsCard';
 import styles from './DashboardPage.module.css';
 
 export const DashboardPage = () => {
@@ -218,6 +223,31 @@ export const DashboardPage = () => {
               )}
             </ul>
           )}
+        </div>
+
+        {/* Energy Score — 12 cols */}
+        <div style={{ gridColumn: 'span 12' }}>
+          <EnergyScoreCard />
+        </div>
+
+        {/* Goals — 12 cols */}
+        <div style={{ gridColumn: 'span 12' }}>
+          <GoalsCard />
+        </div>
+
+        {/* Predictions — 12 cols */}
+        <div style={{ gridColumn: 'span 12' }}>
+          <PredictionsCard />
+        </div>
+
+        {/* Insights — 12 cols */}
+        <div style={{ gridColumn: 'span 12' }}>
+          <InsightsPanel />
+        </div>
+
+        {/* Streaks — 12 cols */}
+        <div style={{ gridColumn: 'span 12' }}>
+          <StreaksCard />
         </div>
 
         {/* Meal Plan — 8 cols */}

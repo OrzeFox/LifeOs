@@ -10,8 +10,8 @@ export interface NutritionData {
 }
 
 @Injectable()
-export class NutritionService {
-  private readonly logger = new Logger(NutritionService.name);
+export class NutritionAnalyzerService {
+  private readonly logger = new Logger(NutritionAnalyzerService.name);
   private readonly groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
   async analyze(description: string): Promise<NutritionData | null> {
@@ -37,7 +37,7 @@ export class NutritionService {
         fat:      Math.round(json.fat      ?? 0),
         fiber:    Math.round(json.fiber    ?? 0),
       };
-    } catch (err) {
+    } catch (err: any) {
       this.logger.warn(`Nutrition analysis failed: ${err.message}`);
       return null;
     }

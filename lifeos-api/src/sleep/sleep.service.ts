@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SleepLog } from './entities/sleep-log.entity';
 import { CreateSleepLogDto } from './dto/create-sleep-log.dto';
 import { UpdateSleepLogDto } from './dto/update-sleep-log.dto';
+import { DomainEvents, type DomainEventPayload } from '../smart-alerts/events';
 
 const MS_PER_MIN = 60_000;
 
@@ -12,7 +14,18 @@ export class SleepService {
   constructor(
     @InjectRepository(SleepLog)
     private readonly repo: Repository<SleepLog>,
+    private readonly events: EventEmitter2,
   ) {}
+
+  private emitLogged(userId: string, log: SleepLog) {
+    const payload: DomainEventPayload = {
+      userId,
+      event: DomainEvents.SleepLogged,
+      at: new Date().toISOString(),
+      meta: { sleepLogId: log.id, hours: log.durationMin / 60 },
+    };
+    this.events.emit(DomainEvents.SleepLogged, payload);
+  }
 
   private computeDuration(sleepAt: Date, wakeAt: Date): number {
     const diff = wakeAt.getTime() - sleepAt.getTime();
@@ -29,7 +42,9 @@ export class SleepService {
       sleepAt, wakeAt, durationMin,
       notes: dto.notes,
     });
-    return this.repo.save(log);
+    const saved = await this.repo.save(log);
+    this.emitLogged(userId, saved);
+    return saved;
   }
 
   async update(id: string, userId: string, dto: UpdateSleepLogDto) {
@@ -39,7 +54,9 @@ export class SleepService {
     if (dto.wakeAt) log.wakeAt = new Date(dto.wakeAt);
     if (dto.notes !== undefined) log.notes = dto.notes;
     log.durationMin = this.computeDuration(log.sleepAt, log.wakeAt);
-    return this.repo.save(log);
+    const saved = await this.repo.save(log);
+    this.emitLogged(userId, saved);
+    return saved;
   }
 
   async delete(id: string, userId: string) {

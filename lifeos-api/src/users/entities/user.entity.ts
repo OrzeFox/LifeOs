@@ -5,10 +5,14 @@ import {
 import { Expense } from '../../finances/entities/expense.entity';
 import { MonthlyIncome } from '../../finances/entities/monthly-income.entity';
 import { Habit } from '../../habits/entities/habit.entity';
-import { Meal } from '../../routine/entities/meal.entity';
+import { Meal } from '../../nutrition/entities/meal.entity';
 import { EnergyLog } from '../../energy/entities/energy-log.entity';
 import { GymActivity } from '../../gym/entities/gym-activity.entity';
 import { SleepLog } from '../../sleep/entities/sleep-log.entity';
+import { JournalEntry } from '../../journal/entities/journal-entry.entity';
+import { Insight } from '../../insights/entities/insight.entity';
+import { Goal } from '../../goals/entities/goal.entity';
+import { RoutineTemplate } from '../../templates/entities/routine-template.entity';
 
 @Entity('users')
 export class User {
@@ -62,4 +66,16 @@ export class User {
 
   @OneToMany(() => SleepLog, (log) => log.user)
   sleepLogs: SleepLog[];
+
+  @OneToMany(() => JournalEntry, (entry) => entry.user)
+  journalEntries: JournalEntry[];
+
+  @OneToMany(() => Insight, (insight) => insight.user)
+  insights: Insight[];
+
+  @OneToMany(() => Goal, (goal) => goal.user)
+  goals: Goal[];
+
+  @OneToMany(() => RoutineTemplate, (t) => t.user)
+  templates: RoutineTemplate[];
 }

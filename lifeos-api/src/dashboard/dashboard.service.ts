@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FinancesService } from '../finances/finances.service';
 import { HabitsService } from '../habits/habits.service';
-import { RoutineService } from '../routine/routine.service';
+import { NutritionService } from '../nutrition/nutrition.service';
 import { EnergyService } from '../energy/energy.service';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class DashboardService {
   constructor(
     private readonly financesService: FinancesService,
     private readonly habitsService: HabitsService,
-    private readonly routineService: RoutineService,
+    private readonly nutritionService: NutritionService,
     private readonly energyService: EnergyService,
   ) {}
 
@@ -22,7 +22,7 @@ export class DashboardService {
     const [summary, habits, meals, energy, energyWeekly] = await Promise.all([
       this.financesService.getMonthlySummary(userId, year, month),
       this.habitsService.getHabitsForDate(userId, date),
-      this.routineService.getMealsForDate(userId, date),
+      this.nutritionService.getMealsForDate(userId, date),
       this.energyService.getLogForDate(userId, date),
       this.energyService.getWeekly(userId, date),
     ]);

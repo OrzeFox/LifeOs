@@ -1,0 +1,94 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-lg);
+  padding: 4px 8px 4px 0;
+  transition: background 0.15s ease;
+}
+
+.row:hover { background: var(--color-surface-container-high); }
+.rowActive { background: var(--color-surface-container-high); }
+
+.rowBtn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--color-on-surface);
+  text-align: left;
+  cursor: pointer;
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.date {
+  font-size: var(--text-label-md);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-on-surface);
+}
+
+.metrics {
+  display: flex;
+  gap: 10px;
+  font-size: var(--text-body-sm);
+}
+
+.preview {
+  width: 100%;
+  margin-top: 2px;
+  font-size: var(--text-label-md);
+  color: var(--color-outline);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-outline);
+  display: flex;
+}
+
+.deleteBtn:hover { color: var(--color-error); }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  gap: 10px;
+}
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-surface-container-high);
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-outline);
+  text-align: center;
+}
