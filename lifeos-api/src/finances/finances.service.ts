@@ -14,9 +14,7 @@ export class FinancesService {
     private readonly incomeRepo: Repository<MonthlyIncome>,
     @InjectRepository(ExpenseCategory)
     private readonly categoriesRepo: Repository<ExpenseCategory>,
-  ) {}
-
-  // --- Expenses ---
+  ) { }
   createExpense(userId: string, data: Partial<Expense>) {
     const expense = this.expensesRepo.create({ ...data, user: { id: userId } });
     return this.expensesRepo.save(expense);
