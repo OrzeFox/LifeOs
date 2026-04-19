@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/finances', icon: 'account_balance_wallet', label: 'Finanzas' },
   { to: '/habits',   icon: 'self_improvement', label: 'Hábitos' },
   { to: '/routine',  icon: 'restaurant', label: 'Alimentación' },
+  { to: '/gym',      icon: 'fitness_center', label: 'Gimnasio' },
 ];
 
 export function Sidebar() {

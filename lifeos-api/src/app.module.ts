@@ -7,6 +7,7 @@ import { FinancesModule } from './finances/finances.module';
 import { HabitsModule } from './habits/habits.module';
 import { RoutineModule } from './routine/routine.module';
 import { EnergyModule } from './energy/energy.module';
+import { GymModule } from './gym/gym.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
@@ -33,6 +34,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     HabitsModule,
     RoutineModule,
     EnergyModule,
+    GymModule,
     DashboardModule,
   ],
 })

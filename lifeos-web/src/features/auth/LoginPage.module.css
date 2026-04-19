@@ -52,6 +52,43 @@
   border-color: rgba(78, 222, 163, 0.40);
 }
 
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInput {
+  padding-right: 44px;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface-variant);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.passwordToggle:hover {
+  color: var(--color-primary);
+  background: rgba(78, 222, 163, 0.08);
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid rgba(78, 222, 163, 0.40);
+  outline-offset: 2px;
+}
+
 .error {
   color: var(--color-error);
   font-size: var(--text-label-sm);

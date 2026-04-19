@@ -19,13 +19,14 @@ export class DashboardService {
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
 
-    const [summary, habits, meals, energy] = await Promise.all([
+    const [summary, habits, meals, energy, energyWeekly] = await Promise.all([
       this.financesService.getMonthlySummary(userId, year, month),
       this.habitsService.getHabitsForDate(userId, date),
       this.routineService.getMealsForDate(userId, date),
       this.energyService.getLogForDate(userId, date),
+      this.energyService.getWeekly(userId, date),
     ]);
 
-    return { date, summary, habits, meals, energy };
+    return { date, summary, habits, meals, energy, energyWeekly };
   }
 }

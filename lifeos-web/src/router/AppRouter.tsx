@@ -4,6 +4,7 @@ import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { FinancesPage } from '../features/finances/FinancesPage';
 import { HabitsPage } from '../features/habits/HabitsPage';
 import { RoutinePage } from '../features/routine/RoutinePage';
+import { GymPage } from '../features/gym/GymPage';
 import { LoginPage } from '../features/auth/LoginPage';
 import { Sidebar } from '../components/Sidebar';
 import styles from './AppRouter.module.css';
@@ -37,6 +38,7 @@ export const AppRouter = () => {
                   <Route path="/finances" element={<FinancesPage />} />
                   <Route path="/habits"   element={<HabitsPage />} />
                   <Route path="/routine"  element={<RoutinePage />} />
+                  <Route path="/gym"      element={<GymPage />} />
                 </Routes>
               </AppShell>
             </PrivateRoute>

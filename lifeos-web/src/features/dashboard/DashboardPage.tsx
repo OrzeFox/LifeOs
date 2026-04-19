@@ -4,6 +4,7 @@ import { MEAL_TYPES } from '../../ts/routine';
 import useDashboard from './hooks/useDashboard';
 import { ProgressBar } from './components/ProgressBar';
 import { EnergyInput } from './components/EnergyInput';
+import { EnergyWeekly } from './components/EnergyWeekly';
 import { DashboardHabitRow } from './components/DashboardHabitRow';
 import styles from './DashboardPage.module.css';
 
@@ -148,10 +149,31 @@ export const DashboardPage = () => {
             <EnergyInput
               initial={data.energy?.level ?? null}
               date={data.date}
-              onChange={(v) => setData((d) => d ? { ...d, energy: { ...d.energy, level: v } } : d)}
+              onChange={(v) => {
+                setData((d) => d ? {
+                  ...d,
+                  energy: { ...d.energy, level: v },
+                  energyWeekly: d.energyWeekly
+                    ? {
+                        ...d.energyWeekly,
+                        days: d.energyWeekly.days.map((day) =>
+                          day.date === d.date ? { ...day, level: v } : day,
+                        ),
+                      }
+                    : d.energyWeekly,
+                } : d);
+                reload();
+              }}
             />
           </div>
         </div>
+
+        {/* Energy weekly trend — 12 cols */}
+        {data.energyWeekly && (
+          <div className={styles.card} style={{ gridColumn: 'span 12' }}>
+            <EnergyWeekly data={data.energyWeekly} today={data.date} />
+          </div>
+        )}
 
         {/* Habit Loop — 4 cols */}
         <div className={styles.card} style={{ gridColumn: 'span 4' }}>

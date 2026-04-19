@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Icon } from '../../components/Icon';
 import type { LoginForm } from '../../ts/auth';
 import useLogin from './hooks/useLogin';
 import styles from './LoginPage.module.css';
 
 export const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [showPassword, setShowPassword] = useState(false);
   const { error, loading, submit } = useLogin();
 
   const { register, handleSubmit } = useForm<LoginForm>({
@@ -30,6 +32,7 @@ export const LoginPage = () => {
               type="text"
               placeholder="Nombre"
               className={styles.input}
+              aria-label="Nombre"
               {...register('name', { required: mode === 'register' })}
             />
           )}
@@ -37,14 +40,28 @@ export const LoginPage = () => {
             type="email"
             placeholder="Email"
             className={styles.input}
+            aria-label="Email"
             {...register('email', { required: true })}
           />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            className={styles.input}
-            {...register('password', { required: true })}
-          />
+          <div className={styles.passwordWrapper}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Contraseña"
+              className={`${styles.input} ${styles.passwordInput}`}
+              aria-label="Contraseña"
+              {...register('password', { required: true })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className={styles.passwordToggle}
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              aria-pressed={showPassword}
+              tabIndex={0}
+            >
+              <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={18} />
+            </button>
+          </div>
           {error && <p className={styles.error}>{error}</p>}
           <button type="submit" disabled={loading} className={styles.submitBtn}>
             {loading ? 'Cargando...' : mode === 'login' ? 'Entrar' : 'Registrarse'}

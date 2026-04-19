@@ -23,4 +23,11 @@ export class EnergyController {
     this.logger.log(`GET /energy — user: ${user.id} | date: ${d}`);
     return this.energyService.getLogForDate(user.id, d);
   }
+
+  @Get('weekly')
+  getWeekly(@CurrentUser() user, @Query('endDate') endDate: string) {
+    const d = endDate || new Date().toISOString().split('T')[0];
+    this.logger.log(`GET /energy/weekly — user: ${user.id} | endDate: ${d}`);
+    return this.energyService.getWeekly(user.id, d);
+  }
 }

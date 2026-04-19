@@ -7,6 +7,7 @@ import { MonthlyIncome } from '../../finances/entities/monthly-income.entity';
 import { Habit } from '../../habits/entities/habit.entity';
 import { Meal } from '../../routine/entities/meal.entity';
 import { EnergyLog } from '../../energy/entities/energy-log.entity';
+import { GymActivity } from '../../gym/entities/gym-activity.entity';
 
 @Entity('users')
 export class User {
@@ -39,4 +40,7 @@ export class User {
 
   @OneToMany(() => EnergyLog, (log) => log.user)
   energyLogs: EnergyLog[];
+
+  @OneToMany(() => GymActivity, (activity) => activity.user)
+  gymActivities: GymActivity[];
 }
