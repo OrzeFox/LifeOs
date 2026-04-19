@@ -30,6 +30,22 @@ export class AuthService {
     return this.buildToken(user.id, user.email);
   }
 
+  async validateGoogleUser(googleUser: {
+    email: string;
+    name: string;
+    googleId: string;
+  }) {
+    let user = await this.usersService.findByEmail(googleUser.email);
+    if (!user) {
+      user = await this.usersService.create({
+        email: googleUser.email,
+        name: googleUser.name,
+        googleId: googleUser.googleId,
+      });
+    }
+    return this.buildToken(user.id, user.email);
+  }
+
   private buildToken(userId: string, email: string) {
     return {
       access_token: this.jwtService.sign({ sub: userId, email }),

@@ -17,11 +17,14 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ name: 'password_hash' })
+  @Column({ name: 'password_hash', nullable: true })
   passwordHash: string;
 
   @Column()
   name: string;
+
+  @Column({ name: 'google_id', nullable: true, unique: true })
+  googleId: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

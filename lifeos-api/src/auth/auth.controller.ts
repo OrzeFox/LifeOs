@@ -1,4 +1,6 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Get, Body, Logger, UseGuards, Req, Res } from '@nestjs/common';
+import type { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -19,5 +21,19 @@ export class AuthController {
   login(@Body() dto: LoginDto) {
     this.logger.log(`POST /auth/login — email: ${dto.email}`);
     return this.authService.login(dto.email, dto.password);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth() {
+    this.logger.log('GET /auth/google - iniciando OAuth Google');
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  googleCallback(@Req() req, @Res() res: Response) {
+    this.logger.log(`GET /auth/google/callback - token emitido`);
+    const redirectUrl = `http://localhost:5173/login?access_token=${req.user.access_token}`;
+    res.redirect(redirectUrl);
   }
 }

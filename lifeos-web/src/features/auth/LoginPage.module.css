@@ -135,6 +135,51 @@
   color: var(--color-on-surface);
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+  color: var(--color-on-surface-variant);
+  font-size: var(--text-label-sm);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(60, 74, 66, 0.15);
+}
+
+.googleBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  border: 1px solid rgba(60, 74, 66, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s ease;
+}
+
+.googleBtn:hover:not(:disabled) {
+  border-color: rgba(78, 222, 163, 0.40);
+  background: rgba(78, 222, 163, 0.04);
+}
+
+.googleBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 24px 20px;
