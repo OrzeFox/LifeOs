@@ -11,12 +11,13 @@ import { JournalModule } from '../journal/journal.module';
 import { StreaksModule } from '../streaks/streaks.module';
 import { SleepLog } from '../sleep/entities/sleep-log.entity';
 import { GymActivity } from '../gym/entities/gym-activity.entity';
+import { HabitLog } from '../habits/entities/habit-log.entity';
 import { UserContextService } from './user-context.service';
 import { UserContextController } from './user-context.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SleepLog, GymActivity]),
+    TypeOrmModule.forFeature([SleepLog, GymActivity, HabitLog]),
     UsersModule,
     SleepModule,
     GymModule,

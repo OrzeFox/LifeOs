@@ -37,11 +37,20 @@ export class TemplatesService {
     return { deleted: true };
   }
 
-  async apply(id: string, userId: string): Promise<{ created: number }> {
+  async apply(id: string, userId: string): Promise<{ created: number; skipped: number }> {
     const t = await this.repo.findOne({ where: { id, user: { id: userId } } });
     if (!t) throw new NotFoundException('Template not found');
 
-    const entities = t.habits.map((h) =>
+    const existing = await this.habitsRepo.find({
+      where: { user: { id: userId }, isActive: true },
+      select: { name: true },
+    });
+    const existingNames = new Set(existing.map((h) => h.name.toLowerCase()));
+
+    const toCreate = t.habits.filter((h) => !existingNames.has(h.name.toLowerCase()));
+    const skipped = t.habits.length - toCreate.length;
+
+    const entities = toCreate.map((h) =>
       this.habitsRepo.create({
         user: { id: userId } as any,
         name: h.name,
@@ -56,11 +65,11 @@ export class TemplatesService {
         isActive: true,
       }),
     );
-    await this.habitsRepo.save(entities);
+    if (entities.length) await this.habitsRepo.save(entities);
 
     t.lastAppliedAt = new Date();
     await this.repo.save(t);
-    return { created: entities.length };
+    return { created: entities.length, skipped };
   }
 
   async saveFromExisting(userId: string, name: string, description: string | null): Promise<RoutineTemplate> {

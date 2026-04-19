@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, MoreThanOrEqual, Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { SleepService } from '../sleep/sleep.service';
 import { GymService } from '../gym/gym.service';
@@ -12,6 +12,7 @@ import { JournalService } from '../journal/journal.service';
 import { StreaksService } from '../streaks/streaks.service';
 import { SleepLog } from '../sleep/entities/sleep-log.entity';
 import { GymActivity } from '../gym/entities/gym-activity.entity';
+import { HabitLog } from '../habits/entities/habit-log.entity';
 import type { UserContext, DateRange } from './types';
 
 const DAY_MS = 86_400_000;
@@ -48,6 +49,7 @@ export class UserContextService {
     private readonly streaks: StreaksService,
     @InjectRepository(SleepLog) private readonly sleepRepo: Repository<SleepLog>,
     @InjectRepository(GymActivity) private readonly gymRepo: Repository<GymActivity>,
+    @InjectRepository(HabitLog) private readonly habitLogRepo: Repository<HabitLog>,
   ) {}
 
   async build(userId: string, opts: { days?: number } = {}): Promise<UserContext> {
@@ -55,21 +57,34 @@ export class UserContextService {
     const range = rangeDays(days);
     const today = ymd(new Date());
 
-    const [profileRaw, sleepStats, gymActivities, nutToday, nutRange, habitsToday, eventsToday, eventsNext7, financeMonth, weekSpent, journalToday, journalStats] =
+    const nowDate = new Date();
+    const financeYear = nowDate.getFullYear();
+    const financeMonthNum = nowDate.getMonth() + 1;
+    const monthExpensesP = this.finances.getExpensesByMonth(userId, financeYear, financeMonthNum);
+    const gymSince = ymd(new Date(Date.now() - 30 * DAY_MS));
+
+    const [profileRaw, sleepStats, gymActivities, nutToday, nutRange, habitsToday, eventsToday, eventsNext7, financeMonth, monthExpenses, journalToday, journalStats] =
       await Promise.all([
         this.users.getProfile(userId),
         this.sleep.stats(userId),
-        this.gym.getAll(userId),
+        this.gymRepo.find({
+          where: {
+            user: { id: userId } as any,
+            date: MoreThanOrEqual(gymSince),
+          },
+          order: { date: 'DESC' },
+        }),
         this.nutrition.getDailySummary(userId, today),
         this.nutrition.getRangeSummary(userId, range.from, range.to),
         this.habits.getHabitsForDate(userId, today),
         this.eventsToday(userId),
         this.eventsUpcoming(userId, 7),
         this.financeMonth(userId),
-        this.weekSpent(userId),
+        monthExpensesP,
         this.journal.getForDate(userId, today),
         this.journal.stats(userId),
       ]);
+    const weekSpent = this.weekSpentFromExpenses(monthExpenses);
 
     const topHabitStreaks = (await this.streaks.getHabitStreaks(userId)).slice(0, 5);
 
@@ -207,13 +222,17 @@ export class UserContextService {
   }
 
   private async habitsLast7dRate(userId: string): Promise<number> {
-    let scheduledSum = 0;
-    let completedSum = 0;
     const today = new Date();
+    const dates: string[] = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
-      const list = await this.habits.getHabitsForDate(userId, ymd(d));
+      dates.push(ymd(d));
+    }
+    const lists = await Promise.all(dates.map((d) => this.habits.getHabitsForDate(userId, d)));
+    let scheduledSum = 0;
+    let completedSum = 0;
+    for (const list of lists) {
       scheduledSum += list.length;
       completedSum += list.filter((h: any) => h.completed).length;
     }
@@ -221,16 +240,25 @@ export class UserContextService {
   }
 
   private async habitsMissedStreak(userId: string): Promise<number> {
+    const activeCount = (await this.habits.getHabits(userId)).length;
+    if (activeCount === 0) return 0;
+    const since = new Date();
+    since.setDate(since.getDate() - 14);
+    const rows = await this.habitLogRepo.find({
+      where: {
+        habit: { user: { id: userId } } as any,
+        completed: true,
+        date: MoreThanOrEqual(ymd(since)),
+      },
+      select: { date: true },
+    });
+    const completedDates = new Set(rows.map((r) => String(r.date).split('T')[0]));
     let streak = 0;
-    const today = new Date();
+    const cursor = new Date();
     for (let i = 0; i < 14; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      const list = await this.habits.getHabitsForDate(userId, ymd(d));
-      if (!list.length) continue;
-      const anyDone = list.some((h: any) => h.completed);
-      if (anyDone) break;
+      if (completedDates.has(ymd(cursor))) break;
       streak++;
+      cursor.setDate(cursor.getDate() - 1);
     }
     return streak;
   }
@@ -256,11 +284,7 @@ export class UserContextService {
     return this.finances.getMonthlySummary(userId, now.getFullYear(), now.getMonth() + 1);
   }
 
-  private async weekSpent(userId: string) {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const expenses = await this.finances.getExpensesByMonth(userId, year, month);
+  private weekSpentFromExpenses(expenses: Array<{ date: string | Date; amount: number | string }>) {
     const startOfWeek = new Date();
     const dow = startOfWeek.getDay();
     const mondayOffset = dow === 0 ? -6 : 1 - dow;
@@ -271,7 +295,6 @@ export class UserContextService {
       .filter((e) => new Date(e.date) >= startOfWeek)
       .reduce((s, e) => s + Number(e.amount), 0);
 
-    // average of previous 4 weeks (this month only, rough)
     const prev4 = [1, 2, 3, 4].map((w) => {
       const ws = new Date(startOfWeek);
       ws.setDate(ws.getDate() - w * 7);

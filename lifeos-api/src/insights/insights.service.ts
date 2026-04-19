@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Insight } from './entities/insight.entity';
 import { User } from '../users/entities/user.entity';
@@ -20,29 +20,36 @@ export class InsightsService {
   async runForUser(userId: string): Promise<Insight[]> {
     const ctx = await this.context.build(userId);
     const today = new Date().toISOString().split('T')[0];
-    const saved: Insight[] = [];
 
-    for (const rule of RULE_REGISTRY) {
-      const draft = rule.evaluate(ctx);
-      if (!draft) continue;
+    const drafts = RULE_REGISTRY
+      .map((rule) => rule.evaluate(ctx))
+      .filter((d): d is NonNullable<typeof d> => !!d);
+    if (!drafts.length) return [];
 
-      const dedupeKey = `${draft.ruleId}:${userId}:${today}`;
-      const existing = await this.repo.findOne({ where: { dedupeKey } });
-      if (existing) continue;
+    const dedupeKeys = drafts.map((d) => `${d.ruleId}:${userId}:${today}`);
+    const existing = await this.repo.find({
+      where: { dedupeKey: In(dedupeKeys) },
+      select: { dedupeKey: true },
+    });
+    const existingKeys = new Set(existing.map((e) => e.dedupeKey));
 
-      const entity = this.repo.create({
-        user: { id: userId } as any,
-        ruleId: draft.ruleId,
-        category: draft.category,
-        priority: draft.priority,
-        title: draft.title,
-        message: draft.message,
-        data: draft.data ?? null,
-        dedupeKey,
+    const entities = drafts
+      .filter((_, i) => !existingKeys.has(dedupeKeys[i]))
+      .map((draft) => {
+        const dedupeKey = `${draft.ruleId}:${userId}:${today}`;
+        return this.repo.create({
+          user: { id: userId } as any,
+          ruleId: draft.ruleId,
+          category: draft.category,
+          priority: draft.priority,
+          title: draft.title,
+          message: draft.message,
+          data: draft.data ?? null,
+          dedupeKey,
+        });
       });
-      saved.push(await this.repo.save(entity));
-    }
 
+    const saved = entities.length ? await this.repo.save(entities) : [];
     this.logger.log(`runForUser(${userId}): ${saved.length} new insight(s)`);
     return saved;
   }

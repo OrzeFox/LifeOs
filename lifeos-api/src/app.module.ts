@@ -1,8 +1,13 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { WinstonModule, utilities as nestWinstonUtilities } from 'nest-winston';
+import * as path from 'path';
+import * as winston from 'winston';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { FinancesModule } from './finances/finances.module';
@@ -28,6 +33,21 @@ import { TemplatesModule } from './templates/templates.module';
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonUtilities.format.nestLike('LifeOS', { prettyPrint: true }),
+          ),
+        }),
+        new winston.transports.File({
+          filename: path.join(process.cwd(), 'logs', 'api.log'),
+          format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+        }),
+      ],
+    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -63,5 +83,6 @@ import { TemplatesModule } from './templates/templates.module';
     PredictionsModule,
     TemplatesModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule { }

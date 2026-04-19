@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Logger, UseGuards, Req, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -11,12 +12,14 @@ export class AuthController {
 
   constructor(private readonly authService: AuthService) { }
 
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
   register(@Body() dto: RegisterDto) {
     this.logger.log(`POST /auth/register — email: ${dto.email}`);
     return this.authService.register(dto.email, dto.password, dto.name);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('login')
   login(@Body() dto: LoginDto) {
     this.logger.log(`POST /auth/login — email: ${dto.email}`);
