@@ -29,7 +29,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   const allowedOrigins = [
-    'http://localhost:5174',
+    'http://localhost:5173',
     ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : []),
   ];
   app.enableCors({ origin: allowedOrigins });
