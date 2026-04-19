@@ -4,6 +4,7 @@ import { Icon } from '../../components/Icon';
 import { ACTIVITY_TYPES } from '../../ts/gym';
 import type { ActivityType, GymActivityForm } from '../../ts/gym';
 import useGym from './hooks/useGym';
+import { RecommendationPanel } from './components/RecommendationPanel';
 import styles from './GymPage.module.css';
 
 const typeMeta = (t: ActivityType) => ACTIVITY_TYPES.find((a) => a.value === t)!;
@@ -91,6 +92,8 @@ export const GymPage = () => {
           })}
         </div>
       </div>
+
+      <RecommendationPanel />
 
       <div className={styles.twoCol}>
 

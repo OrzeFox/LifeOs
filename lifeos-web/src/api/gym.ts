@@ -1,5 +1,6 @@
 import api from './client';
 import type { ActivityType } from '../ts/gym';
+import type { Recommendation } from '../ts/recommendation';
 
 export const gymApi = {
   getAll: (type?: ActivityType) => api.get('/gym', { params: type ? { type } : {} }),
@@ -15,4 +16,9 @@ export const gymApi = {
   delete: (id: string) => api.delete(`/gym/${id}`),
 
   getSummary: () => api.get('/gym/summary'),
+
+  getRecommendation: () => api.get<Recommendation | null>('/gym/recommendations'),
+
+  generateRecommendation: (notes?: string) =>
+    api.post<Recommendation>('/gym/recommendations/generate', notes ? { notes } : {}),
 };

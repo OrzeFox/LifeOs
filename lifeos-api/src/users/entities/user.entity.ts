@@ -8,6 +8,7 @@ import { Habit } from '../../habits/entities/habit.entity';
 import { Meal } from '../../routine/entities/meal.entity';
 import { EnergyLog } from '../../energy/entities/energy-log.entity';
 import { GymActivity } from '../../gym/entities/gym-activity.entity';
+import { SleepLog } from '../../sleep/entities/sleep-log.entity';
 
 @Entity('users')
 export class User {
@@ -25,6 +26,18 @@ export class User {
 
   @Column({ name: 'google_id', nullable: true, unique: true })
   googleId: string;
+
+  @Column({ type: 'date', nullable: true })
+  birthdate: Date;
+
+  @Column({ name: 'height_cm', type: 'float', nullable: true })
+  heightCm: number;
+
+  @Column({ name: 'weight_kg', type: 'float', nullable: true })
+  weightKg: number;
+
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  goal: 'gain' | 'lose' | 'maintain';
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -46,4 +59,7 @@ export class User {
 
   @OneToMany(() => GymActivity, (activity) => activity.user)
   gymActivities: GymActivity[];
+
+  @OneToMany(() => SleepLog, (log) => log.user)
+  sleepLogs: SleepLog[];
 }

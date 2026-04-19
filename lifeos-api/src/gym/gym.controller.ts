@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { GymService } from './gym.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
+import { GenerateRecommendationDto } from './dto/generate-recommendation.dto';
 import { ActivityType } from './entities/gym-activity.entity';
 
 @UseGuards(JwtAuthGuard)
@@ -32,5 +33,17 @@ export class GymController {
   @Get('summary')
   getSummary(@CurrentUser() user) {
     return this.gymService.getSummary(user.id);
+  }
+
+  @Get('recommendations')
+  getRecommendation(@CurrentUser() user) {
+    this.logger.log(`GET /gym/recommendations — user: ${user.id}`);
+    return this.gymService.getLatestRecommendation(user.id);
+  }
+
+  @Post('recommendations/generate')
+  generateRecommendation(@CurrentUser() user, @Body() dto: GenerateRecommendationDto) {
+    this.logger.log(`POST /gym/recommendations/generate — user: ${user.id}`);
+    return this.gymService.generateRecommendation(user.id, dto.notes);
   }
 }
