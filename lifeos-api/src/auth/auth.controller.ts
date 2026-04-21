@@ -36,7 +36,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   googleCallback(@Req() req, @Res() res: Response) {
     this.logger.log(`GET /auth/google/callback - token emitido`);
-    const redirectUrl = `http://localhost:5173/login?access_token=${req.user.access_token}`;
+    const redirectUrl = `https://life-os-teal-zeta.vercel.app/login?access_token=${req.user.access_token}`;
     res.redirect(redirectUrl);
   }
 }
